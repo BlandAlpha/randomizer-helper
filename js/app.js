@@ -247,7 +247,7 @@ function saveSettings() {
     storage.saveAppData(appData);
     settingsHaveChanged = false;
     
-    ui.populateUI(currentSettings); // 使用新保存的设置更新UI
+    ui.populateUI(template); // 使用新保存的设置更新UI
     showGame(); // 返回游戏页面
     ui.showToast("设置已保存");
 }
@@ -353,7 +353,10 @@ window.addEventListener('DOMContentLoaded', () => {
     // 游戏页
     dom.togglePauseButton.addEventListener('click', game.togglePause);
     dom.restartButton.addEventListener('click', () => {
-        game.resetGame(() => ui.populateUI(currentSettings));
+        const template = appData.templates.find(t => t.id === appData.activeTemplateId);
+        if (template) {
+            game.resetGame(() => ui.populateUI(template));
+        }
     });
     dom.copyBtn.addEventListener('click', () => {
         if (appData.activeTemplateId) {
@@ -449,7 +452,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 isSharedPool: template.isSharedPool
             };
             // 使用原始的、未更改的数据重新填充游戏UI
-            ui.populateUI(currentSettings);
+            ui.populateUI(template);
         }
         
         showGame(); // 返回游戏页面
