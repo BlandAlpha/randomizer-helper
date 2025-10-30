@@ -20,33 +20,30 @@ export function renderHomePage(templates, eventHandlers) {
     templates.forEach(template => {
         const card = document.createElement('div');
 
-        // 样式区分
         const isDefault = template.isDefault;
-        const baseClasses = "template-card-clickable p-4 rounded-lg flex flex-col md:flex-row items-center justify-between gap-3 cursor-pointer transition-colors";
+        const baseClasses = "template-card-clickable p-4 rounded-lg flex items-center justify-between gap-3 cursor-pointer transition-colors";
         const styleClasses = isDefault 
-            ? 'bg-gray-800 border border-gray-700 hover:bg-gray-700' // 默认模板
-            : 'bg-gray-700 hover:bg-gray-600'; // 自定义模板
+            ? 'bg-gray-800 border border-gray-700 hover:bg-gray-700'
+            : 'bg-gray-700 hover:bg-gray-600';
             
         card.className = `${baseClasses} ${styleClasses}`;
         card.dataset.id = template.id;
         
-        let buttonsHTML = '';
-        if (template.isDefault) {
-            buttonsHTML = `<button data-id="${template.id}" class="duplicate-template-btn w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">复制并编辑</button>`;
-        } else {
-            buttonsHTML = `
-                <button data-id="${template.id}" class="edit-template-btn w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">编辑</button>
-                <button data-id="${template.id}" class="delete-template-btn w-full md:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">删除</button>
-            `;
-        }
+        const optionsButtonHTML = `
+            <button aria-label="选项" data-id="${template.id}" class="options-btn flex-shrink-0 p-2 rounded-full hover:bg-gray-500 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+            </button>
+        `;
 
         card.innerHTML = `
             <div class="flex-grow text-center md:text-left pointer-events-none">
                 <span class="font-bold text-lg text-white">${template.name}</span>
                 ${template.isDefault ? '<span class="ml-2 text-xs bg-gray-500 text-gray-200 py-0.5 px-2 rounded-full">默认</span>' : ''}
             </div>
-            <div class="flex flex-col md:flex-row gap-3 flex-shrink-0 w-full md:w-auto">
-                ${buttonsHTML}
+            <div class="flex-shrink-0">
+                ${optionsButtonHTML}
             </div>
         `;
         dom.templateListEl.appendChild(card);
@@ -54,23 +51,18 @@ export function renderHomePage(templates, eventHandlers) {
     
     // 绑定事件
     dom.templateListEl.querySelectorAll('.template-card-clickable').forEach(card => card.addEventListener('click', (e) => {
-        if (e.target.closest('button')) return; 
+        if (e.target.closest('.options-btn')) return; 
         eventHandlers.onStart(e.currentTarget.dataset.id);
     }));
     
-    dom.templateListEl.querySelectorAll('.edit-template-btn').forEach(btn => btn.addEventListener('click', (e) => {
+    dom.templateListEl.querySelectorAll('.options-btn').forEach(btn => btn.addEventListener('click', (e) => {
         e.stopPropagation(); 
-        eventHandlers.onEdit(e.target.dataset.id);
-    }));
-    
-    dom.templateListEl.querySelectorAll('.delete-template-btn').forEach(btn => btn.addEventListener('click', (e) => {
-        e.stopPropagation(); 
-        eventHandlers.onDelete(e.target.dataset.id);
-    }));
-    
-    dom.templateListEl.querySelectorAll('.duplicate-template-btn').forEach(btn => btn.addEventListener('click', (e) => {
-        e.stopPropagation(); 
-        eventHandlers.onDuplicate(e.target.dataset.id);
+        const templateId = e.currentTarget.dataset.id;
+        const template = templates.find(t => t.id === templateId);
+        if (!template) return;
+
+        const rect = e.currentTarget.getBoundingClientRect();
+        showContextMenu(rect.right, rect.bottom, template);
     }));
 }
 
@@ -255,6 +247,48 @@ export function showConfirmationModal(title, message, mode, callback = null, pro
 export function hideModal() {
     dom.confirmationModal.classList.add('hidden');
 }
+
+/**
+ * 新增: 显示上下文菜单
+ * @param {number} x - 屏幕 x 坐标
+ * @param {number} y - 屏幕 y 坐标
+ * @param {Object} template - 关联的模板对象
+ */
+export function showContextMenu(x, y, template) {
+    dom.contextMenu.innerHTML = ''; // 清空旧菜单项
+
+    const menuItemClasses = "block w-full text-left px-4 py-2 text-sm transition-colors rounded-md";
+    const normalItemClasses = "text-gray-200 hover:bg-gray-700";
+    const dangerItemClasses = "text-red-400 hover:bg-gray-700";
+
+    let menuItemsHTML = '';
+    if (template.isDefault) {
+        menuItemsHTML = `<button data-id="${template.id}" class="context-menu-item duplicate-template-btn ${menuItemClasses} ${normalItemClasses}">复制并编辑</button>`;
+    } else {
+        menuItemsHTML = `
+            <button data-id="${template.id}" class="context-menu-item edit-template-btn ${menuItemClasses} ${normalItemClasses}">编辑</button>
+            <button data-id="${template.id}" class="context-menu-item delete-template-btn ${menuItemClasses} ${dangerItemClasses}">删除</button>
+        `;
+    }
+    dom.contextMenu.innerHTML = menuItemsHTML;
+
+    // 定位 (对齐右下角)
+    const menuWidth = dom.contextMenu.offsetWidth;
+    dom.contextMenu.style.left = `${x - menuWidth}px`;
+    dom.contextMenu.style.top = `${y + 5}px`;
+    
+    dom.contextMenu.classList.remove('hidden');
+}
+
+/**
+ * 新增: 隐藏上下文菜单
+ */
+export function hideContextMenu() {
+    if (dom.contextMenu) {
+        dom.contextMenu.classList.add('hidden');
+    }
+}
+
 
 /**
  * 新增: 显示独立池编辑模态框

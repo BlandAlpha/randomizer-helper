@@ -394,6 +394,36 @@ window.addEventListener('DOMContentLoaded', () => {
             showHomePage();
          }
     });
+
+    // --- 新增: 上下文菜单事件处理 ---
+    dom.contextMenu.addEventListener('click', (e) => {
+        const target = e.target.closest('.context-menu-item');
+        if (!target) return;
+
+        const id = target.dataset.id;
+        if (!id) return;
+
+        // 根据按钮的 class 调用对应的处理函数
+        if (target.classList.contains('edit-template-btn')) {
+            editTemplate(id);
+        } else if (target.classList.contains('delete-template-btn')) {
+            handleDeleteTemplate(id, 'home');
+        } else if (target.classList.contains('duplicate-template-btn')) {
+            handleDuplicateTemplate(id);
+        }
+        
+        ui.hideContextMenu(); // 操作后总是关闭菜单
+    });
+
+    // --- 新增: 点击外部关闭上下文菜单 ---
+    document.addEventListener('click', (e) => {
+        // 如果菜单是可见的，并且点击的不是菜单自身或选项按钮，则关闭
+        if (!dom.contextMenu.classList.contains('hidden') && 
+            !e.target.closest('#context-menu') && 
+            !e.target.closest('.options-btn')) {
+            ui.hideContextMenu();
+        }
+    });
     
     // 模态框按钮
     dom.modalCloseBtn.addEventListener('click', ui.hideModal);

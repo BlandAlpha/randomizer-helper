@@ -53,6 +53,9 @@ export const modalInput = document.getElementById('modal-input');
 // Toast
 export const toastNotification = document.getElementById('toast-notification');
 
+// 新增: 上下文菜单
+export const contextMenu = document.getElementById('context-menu');
+
 // 新增: 独立池模态框
 export const individualPoolModal = document.getElementById('individual-pool-modal');
 export const individualPoolTitle = document.getElementById('individual-pool-title');
