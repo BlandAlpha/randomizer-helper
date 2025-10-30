@@ -43,12 +43,9 @@ export function renderHomePage(templates, eventHandlers) {
 
         const cardHTML = `
             <div data-id="${template.id}" class="template-card-clickable select-none flex-shrink-0 w-60 h-36 md:w-72 md:h-40 rounded-xl cursor-pointer transition-transform hover:scale-105 overflow-hidden">
-                <div class="relative w-full h-full p-4 flex flex-col justify-end bg-gradient-to-br ${metadata.color}">
+                <div class="relative w-full h-full p-3 flex flex-col justify-end bg-gradient-to-br ${metadata.color}">
                     ${logoDiv}
                     <h3 class="relative text-white text-xl font-bold z-10">${template.name}</h3>
-                    <button data-id="${template.id}" aria-label="复制模板" class="duplicate-template-btn absolute top-3 right-3 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors z-10">
-                        ${copyIconSVG}
-                    </button>
                 </div>
             </div>
         `;
@@ -156,12 +153,19 @@ function createCustomProjectCardHTML(template) {
 
 /**
  * 填充游戏页面
- * @param {Object} currentSettings - 当前模板的配置
+ * @param {Object} template - 当前模板或项目的完整对象
  */
-export function populateUI(currentSettings) {
-    if (!dom.locationTextEl || !dom.rotatorGridEl) return;
-    dom.locationTextEl.textContent = currentSettings.locationText;
-    adjustFontSize(dom.locationTextEl); // 动态调整标题字号
+export function populateUI(template) {
+    if (!dom.projectTitleGame || !dom.scenarioTitleGame || !dom.rotatorGridEl) return;
+    
+    const currentSettings = template.config;
+
+    dom.projectTitleGame.textContent = template.name;
+    dom.scenarioTitleGame.textContent = currentSettings.locationText;
+    
+    adjustFontSize(dom.projectTitleGame);
+    adjustFontSize(dom.scenarioTitleGame);
+
     dom.rotatorGridEl.innerHTML = '';
     currentSettings.rotators.forEach(rotator => {
         const rotatorEl = document.createElement('div');

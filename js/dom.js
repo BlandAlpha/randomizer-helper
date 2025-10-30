@@ -16,7 +16,8 @@ export const emptyStatePlaceholder = document.getElementById('empty-state-placeh
 
 // 游戏页
 export const homeBtn = document.getElementById('home-btn');
-export const locationTextEl = document.getElementById('location-text');
+export const projectTitleGame = document.getElementById('project-title-game');
+export const scenarioTitleGame = document.getElementById('scenario-title-game');
 export const settingsBtnContainer = document.getElementById('settings-btn-container');
 export const settingsButton = document.getElementById('settings-btn');
 export const rotatorGridEl = document.getElementById('rotator-grid');

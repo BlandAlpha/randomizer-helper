@@ -58,7 +58,7 @@ function loadTemplate(templateId) {
     storage.saveAppData(appData); // 保存 activeTemplateId
     
     // 使用 resetGame 来确保进入页面时是初始状态
-    game.resetGame(() => ui.populateUI(currentSettings));
+    game.resetGame(() => ui.populateUI(template));
     
     // 根据是否为默认模板，显示或隐藏设置按钮
     if (template.isDefault) {
