@@ -31,9 +31,12 @@ export const settingSpeedSlider = document.getElementById('setting-speed');
 export const settingSpeedValueDisplay = document.getElementById('setting-speed-value');
 export const resetTemplateBtn = document.getElementById('reset-template-btn');
 export const deleteTemplateBtn = document.getElementById('delete-template-btn');
-export const homeBtnSettings = document.getElementById('home-btn-settings');
 export const settingSharePoolToggle = document.getElementById('setting-share-pool');
 export const sharedPoolContainer = document.getElementById('shared-pool-container');
+
+// 新增: 设置页操作按钮容器
+export const settingsActionsPrimary = document.getElementById('settings-actions-primary');
+export const settingsActionsDanger = document.getElementById('settings-actions-danger');
 
 // 模态框
 export const confirmationModal = document.getElementById('confirmation-modal');

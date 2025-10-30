@@ -113,19 +113,21 @@
                     </div>
                 </div>
 
-                <div class="mt-6 flex-shrink-0 space-y-3">
-                    <button id="save-settings-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-lg">
-                        保存并返回
-                    </button>
-                    <button id="reset-template-btn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-                        重置模板 (恢复到上次保存)
-                    </button>
-                    <button id="delete-template-btn" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-                        删除此模板
-                    </button>
-                    <button id="home-btn-settings" class="w-full bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold py-2 px-4 rounded-lg transition duration-200">
-                        &larr; 返回主页 (不保存)
-                    </button>
+                <div class="mt-6 flex-shrink-0 space-y-4">
+                    <div id="settings-actions-primary">
+                        <button id="save-settings-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-lg">
+                            保存更改
+                        </button>
+                        <button id="reset-template-btn" class="w-full text-center mt-3 text-gray-400 hover:text-white transition duration-200">
+                            重置为上次保存的状态
+                        </button>
+                    </div>
+
+                    <div id="settings-actions-danger" class="pt-4 mt-4 border-t border-gray-700">
+                        <button id="delete-template-btn" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                            删除此模板
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

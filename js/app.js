@@ -219,7 +219,6 @@ function saveSettings() {
     settingsHaveChanged = false;
     
     ui.populateUI(currentSettings); // 使用新保存的设置更新UI
-    showGame();
     ui.showToast("设置已保存");
 }
 
@@ -383,24 +382,10 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    dom.homeBtnSettings.addEventListener('click', () => {
-         if (settingsHaveChanged) {
-            modalConfirmCallback = () => {
-                ui.hideModal();
-                showHomePage();
-            };
-            ui.showConfirmationModal('未保存的更改', '你确定要返回主页并丢弃所有更改吗？', 'confirm-cancel', modalConfirmCallback);
-         } else {
-            showHomePage();
-         }
-    });
-
     // --- 新增: 上下文菜单事件处理 ---
     dom.contextMenu.addEventListener('click', (e) => {
         const target = e.target.closest('.context-menu-item');
-        if (!target) return;
-
-        const id = target.dataset.id;
+        if (!target) return;        const id = target.dataset.id;
         if (!id) return;
 
         // 根据按钮的 class 调用对应的处理函数
@@ -438,7 +423,8 @@ window.addEventListener('DOMContentLoaded', () => {
     
     dom.modalSaveBtn.addEventListener('click', () => {
         ui.hideModal();
-        saveSettings(); // 保存并自动返回游戏页
+        saveSettings(); // 保存
+        showGame();     // 然后返回游戏页
     });
     
     dom.modalConfirmBtn.addEventListener('click', () => {

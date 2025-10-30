@@ -121,9 +121,9 @@ export function populateSettingsForm(template, onAddRotatorField) {
     dom.settingSpeedSlider.disabled = isEditingDisabled;
     dom.addRotatorButton.disabled = isEditingDisabled;
     
-    dom.resetTemplateBtn.classList.toggle('hidden', isEditingDisabled);
-    dom.deleteTemplateBtn.classList.toggle('hidden', isEditingDisabled);
-    dom.saveSettingsButton.classList.toggle('hidden', isEditingDisabled);
+    // 隐藏或显示整个操作区域
+    dom.settingsActionsPrimary.classList.toggle('hidden', isEditingDisabled);
+    dom.settingsActionsDanger.classList.toggle('hidden', isEditingDisabled);
     
     dom.settingsRotatorsContainer.querySelectorAll('input, button').forEach(el => el.disabled = isEditingDisabled);
 }
