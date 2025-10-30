@@ -23,7 +23,6 @@ let editingRotatorId = null; // 新增: 跟踪正在编辑的独立池ID
 function showHomePage() {
     ui.renderHomePage(appData.templates, {
         onStart: loadTemplate,
-        onEdit: editTemplate,
         onDelete: (id) => handleDeleteTemplate(id, 'home'),
         onDuplicate: handleDuplicateTemplate
     });
@@ -45,7 +44,7 @@ function showSettings() {
 function loadTemplate(templateId) {
     const template = appData.templates.find(t => t.id === templateId);
     if (!template) {
-        ui.showToast("找不到模板!", true);
+        ui.showToast("找不到模板或项目!", true);
         return;
     }
     
@@ -75,7 +74,7 @@ function loadTemplate(templateId) {
 function editTemplate(templateId) {
     const template = appData.templates.find(t => t.id === templateId);
     if (!template) {
-        ui.showToast("找不到模板!", true);
+        ui.showToast("找不到模板或项目!", true);
         return;
     }
     
@@ -97,6 +96,7 @@ function handleDuplicateTemplate(templateId) {
     const sourceTemplate = appData.templates.find(t => t.id === templateId);
     if (!sourceTemplate) return;
 
+    const type = sourceTemplate.isDefault ? '模板' : '项目';
     const defaultNewName = `${sourceTemplate.name} (副本)`;
     
     modalConfirmCallback = (newName) => {
@@ -115,12 +115,12 @@ function handleDuplicateTemplate(templateId) {
         
         ui.hideModal();
         showHomePage(); // 留在主页并刷新列表
-        ui.showToast(`模板 "${newName}" 已创建`);
+        ui.showToast(`项目 "${newName}" 已创建`);
     };
     
     ui.showConfirmationModal(
-        "复制模板",
-        `请输入新副本的名称:`,
+        `复制${type}`,
+        `请输入新项目的名称:`,
         "prompt",
         modalConfirmCallback,
         defaultNewName
@@ -175,11 +175,11 @@ function createNewTemplate() {
     };
     
     ui.showConfirmationModal(
-        "创建新模板", 
-        "请输入新模板的名称并选择类型:", 
+        "创建新项目", 
+        "请输入新项目的名称并选择类型:", 
         "create-new", 
         modalConfirmCallback,
-        "我的新模板"
+        "我的新项目"
     );
 }
 
@@ -196,7 +196,7 @@ function saveSettings() {
     }
     
     // 从表单读取数据
-    const newName = dom.settingTemplateNameInput.value || "未命名模板";
+    const newName = dom.settingTemplateNameInput.value || "未命名项目";
     const newLocationText = dom.settingLocationInput.value;
     const newSharedPool = dom.settingPoolTextarea.value.split('\n').map(s => s.trim()).filter(Boolean);
     
@@ -266,7 +266,7 @@ function handleDeleteTemplate(templateId, from) {
         storage.saveAppData(appData);
         
         ui.hideModal();
-        ui.showToast(`模板 "${template.name}" 已删除`);
+        ui.showToast(`项目 "${template.name}" 已删除`);
         
         if (from === 'settings') {
             // 如果在设置页删除，则返回主页
@@ -284,8 +284,8 @@ function handleDeleteTemplate(templateId, from) {
     }; // FIX: 缺少此 '};'
     
     ui.showConfirmationModal(
-        `删除模板 "${template.name}"`,
-        "你确定要永久删除这个模板吗？此操作无法撤销。",
+        `删除项目 "${template.name}"`,
+        "你确定要永久删除这个项目吗？此操作无法撤销。",
         "confirm-cancel",
         modalConfirmCallback
     );
@@ -358,7 +358,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (template) {
             editTemplate(template.id);
         } else {
-            ui.showToast("错误: 找不到当前模板", true);
+            ui.showToast("错误: 找不到当前项目", true);
             showHomePage();
         }
     });

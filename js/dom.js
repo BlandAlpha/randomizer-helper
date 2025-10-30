@@ -25,6 +25,7 @@ export const restartButton = document.getElementById('restart-btn');
 // 设置页
 export const settingsTitleEl = document.getElementById('settings-title');
 export const backToGameBtn = document.getElementById('back-to-game-btn');
+export const settingTemplateNameLabel = document.getElementById('setting-template-name-label');
 export const settingTemplateNameInput = document.getElementById('setting-template-name');
 export const settingLocationInput = document.getElementById('setting-location');
 export const settingPoolTypeSharedBtn = document.getElementById('setting-pool-type-shared-btn');

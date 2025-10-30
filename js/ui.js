@@ -139,9 +139,15 @@ export function populateUI(currentSettings) {
 export function populateSettingsForm(template, onAddRotatorField) {
     if (!dom.settingLocationInput || !dom.settingsRotatorsContainer || !dom.settingPoolTextarea) return;
     
-    const { config, isDefault, name } = template;
+    const { config, name } = template;
     
-    dom.settingsTitleEl.textContent = `编辑: ${name}`;
+    // 既然此页面只用于项目，硬编码文本
+    dom.settingsTitleEl.textContent = `编辑项目: ${name}`;
+    if (dom.settingTemplateNameLabel) {
+        dom.settingTemplateNameLabel.textContent = `项目名称`;
+    }
+    dom.deleteTemplateBtn.textContent = `删除此项目`;
+
     dom.settingTemplateNameInput.value = name;
     dom.settingLocationInput.value = config.locationText;
     dom.settingPoolTextarea.value = (config.sharedPool || []).join('\n');
@@ -156,27 +162,26 @@ export function populateSettingsForm(template, onAddRotatorField) {
     }
     dom.sharedPoolContainer.style.display = template.isSharedPool ? 'block' : 'none';
     
-    // 默认模板不允许切换
-    dom.settingPoolTypeSharedBtn.disabled = template.isDefault;
-    dom.settingPoolTypeIndividualBtn.disabled = template.isDefault;
+    // 因为只编辑项目，这些控件始终可用
+    dom.settingPoolTypeSharedBtn.disabled = false;
+    dom.settingPoolTypeIndividualBtn.disabled = false;
 
     dom.settingsRotatorsContainer.innerHTML = '';
     config.rotators.forEach(rotator => {
         onAddRotatorField(rotator, false); // 传入整个 rotator
     });
     
-    // 根据是否为默认模板显示/隐藏按钮
-    const isEditingDisabled = isDefault;
-    dom.settingTemplateNameInput.disabled = isEditingDisabled;
-    dom.settingLocationInput.disabled = isEditingDisabled;
-    dom.settingPoolTextarea.disabled = isEditingDisabled;
-    dom.addRotatorButton.disabled = isEditingDisabled;
+    // 因为只编辑项目，所有字段和按钮始终可用
+    dom.settingTemplateNameInput.disabled = false;
+    dom.settingLocationInput.disabled = false;
+    dom.settingPoolTextarea.disabled = false;
+    dom.addRotatorButton.disabled = false;
     
-    // 隐藏或显示整个操作区域
-    dom.settingsActionsPrimary.classList.toggle('hidden', isEditingDisabled);
-    dom.settingsActionsDanger.classList.toggle('hidden', isEditingDisabled);
+    // 操作按钮始终可见
+    dom.settingsActionsPrimary.classList.remove('hidden');
+    dom.settingsActionsDanger.classList.remove('hidden');
     
-    dom.settingsRotatorsContainer.querySelectorAll('input, button').forEach(el => el.disabled = isEditingDisabled);
+    dom.settingsRotatorsContainer.querySelectorAll('input, button').forEach(el => el.disabled = false);
 }
 
 /**
@@ -282,7 +287,7 @@ export function showConfirmationModal(title, message, mode, callback = null, pro
         dom.modalButtonsConfirmCancel.classList.remove('hidden');
     } else if (mode === 'prompt') {
         dom.modalInputContainer.classList.remove('hidden');
-        dom.modalInputLabel.textContent = "模板名称"; 
+        dom.modalInputLabel.textContent = "项目名称"; 
         dom.modalInput.value = promptValue;
         dom.modalButtonsConfirmCancel.classList.remove('hidden');
         dom.modalConfirmBtn.textContent = "确认";
@@ -295,7 +300,7 @@ export function showConfirmationModal(title, message, mode, callback = null, pro
         dom.modalPoolTypeSharedBtn.classList.add('active');
         dom.modalPoolTypeIndividualBtn.classList.remove('active');
 
-        dom.modalInputLabel.textContent = "模板名称";
+        dom.modalInputLabel.textContent = "项目名称";
         dom.modalInput.value = promptValue;
         dom.modalButtonsConfirmCancel.classList.remove('hidden');
         dom.modalConfirmBtn.textContent = "创建并开始";
