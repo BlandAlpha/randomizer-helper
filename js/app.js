@@ -92,12 +92,12 @@ function editTemplate(templateId) {
     showSettings();
 }
 
-// "复制并编辑" 默认模板
+// "复制" 模板
 function handleDuplicateTemplate(templateId) {
-    const defaultTemplate = appData.templates.find(t => t.id === templateId);
-    if (!defaultTemplate || !defaultTemplate.isDefault) return;
+    const sourceTemplate = appData.templates.find(t => t.id === templateId);
+    if (!sourceTemplate) return;
 
-    const defaultNewName = `${defaultTemplate.name} (副本)`;
+    const defaultNewName = `${sourceTemplate.name} (副本)`;
     
     modalConfirmCallback = (newName) => {
         if (!newName || newName.trim() === '') {
@@ -105,16 +105,17 @@ function handleDuplicateTemplate(templateId) {
             return; // 停在模态框
         }
 
-        const newTemplate = structuredClone(defaultTemplate);
+        const newTemplate = structuredClone(sourceTemplate);
         newTemplate.id = `custom-${Date.now()}`;
         newTemplate.name = newName;
-        newTemplate.isDefault = false;
+        newTemplate.isDefault = false; // 副本永远不是默认模板
         
         appData.templates.push(newTemplate);
         storage.saveAppData(appData);
         
         ui.hideModal();
-        editTemplate(newTemplate.id); // 立即进入编辑
+        showHomePage(); // 留在主页并刷新列表
+        ui.showToast(`模板 "${newName}" 已创建`);
     };
     
     ui.showConfirmationModal(
@@ -406,9 +407,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (!id) return;
 
         // 根据按钮的 class 调用对应的处理函数
-        if (target.classList.contains('edit-template-btn')) {
-            editTemplate(id);
-        } else if (target.classList.contains('delete-template-btn')) {
+        if (target.classList.contains('delete-template-btn')) {
             handleDeleteTemplate(id, 'home');
         } else if (target.classList.contains('duplicate-template-btn')) {
             handleDuplicateTemplate(id);

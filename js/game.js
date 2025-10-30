@@ -94,11 +94,15 @@ export function resetGame(onReset) {
     lastRotatorValues = {};
     onReset(); // 调用 app.js 中的 populateUI 来重置DOM
     
-    // 恢复初始按钮状态
-    dom.togglePauseButton.textContent = '开始';
-    dom.togglePauseButton.classList.remove('bg-red-600', 'hover:bg-red-700');
-    dom.togglePauseButton.classList.add('bg-green-600', 'hover:bg-green-700');
-    dom.restartButton.classList.add('hidden');
+    // 恢复初始按钮状态 (增加安全检查)
+    if (dom.togglePauseButton) {
+        dom.togglePauseButton.textContent = '开始';
+        dom.togglePauseButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+        dom.togglePauseButton.classList.add('bg-green-600', 'hover:bg-green-700');
+    }
+    if (dom.restartButton) {
+        dom.restartButton.classList.add('hidden');
+    }
 }
 
 /**

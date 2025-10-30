@@ -11,59 +11,101 @@ let toastTimeout = null;
  * @param {Object} eventHandlers - 包含 { onStart, onEdit, onDelete, onDuplicate } 的对象
  */
 export function renderHomePage(templates, eventHandlers) {
-    dom.templateListEl.innerHTML = '';
-    if (templates.length === 0) {
-        dom.templateListEl.innerHTML = `<p class="text-gray-400 text-center">没有模板。请创建一个新模板。</p>`;
-        return;
-    }
-    
-    templates.forEach(template => {
-        const card = document.createElement('div');
+    const defaultTemplates = templates.filter(t => t.isDefault);
+    const customTemplates = templates.filter(t => !t.isDefault);
 
+    dom.defaultTemplateList.innerHTML = '';
+    dom.customTemplateList.innerHTML = '';
+
+    if (customTemplates.length > 0) {
+        dom.customTemplatesSection.classList.remove('hidden');
+    } else {
+        dom.customTemplatesSection.classList.add('hidden');
+    }
+
+    const createCardHTML = (template) => {
         const isDefault = template.isDefault;
         const baseClasses = "template-card-clickable p-4 rounded-lg flex items-center justify-between gap-3 cursor-pointer transition-colors";
         const styleClasses = isDefault 
             ? 'bg-gray-800 border border-gray-700 hover:bg-gray-700'
             : 'bg-gray-700 hover:bg-gray-600';
-            
-        card.className = `${baseClasses} ${styleClasses}`;
-        card.dataset.id = template.id;
-        
-        const optionsButtonHTML = `
-            <button aria-label="选项" data-id="${template.id}" class="options-btn flex-shrink-0 p-2 rounded-full hover:bg-gray-500 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                </svg>
-            </button>
-        `;
 
-        card.innerHTML = `
+        const nameHTML = `
             <div class="flex-grow flex items-center overflow-hidden mr-2 pointer-events-none">
                 <span class="font-bold text-lg text-white truncate" title="${template.name}">${template.name}</span>
-                ${template.isDefault ? '<span class="ml-2 text-xs bg-gray-500 text-gray-200 py-0.5 px-2 rounded-full flex-shrink-0">默认</span>' : ''}
-            </div>
-            <div class="flex-shrink-0">
-                ${optionsButtonHTML}
             </div>
         `;
-        dom.templateListEl.appendChild(card);
+
+        const mobileMenuHTML = `
+            <div class="flex md:hidden flex-shrink-0">
+                <button aria-label="选项" data-id="${template.id}" class="options-btn p-2 rounded-full hover:bg-gray-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                    </svg>
+                </button>
+            </div>
+        `;
+
+        let desktopButtonsHTML = '';
+        if (isDefault) {
+            desktopButtonsHTML = `<button data-id="${template.id}" class="duplicate-template-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm">复制</button>`;
+        } else {
+            desktopButtonsHTML = `
+                <button data-id="${template.id}" class="duplicate-template-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm">复制</button>
+                <button data-id="${template.id}" class="delete-template-btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm">删除</button>
+            `;
+        }
+        
+        return `
+            <div data-id="${template.id}" class="${baseClasses} ${styleClasses}">
+                ${nameHTML}
+                <div class="hidden md:flex flex-shrink-0 items-center gap-3">
+                    ${desktopButtonsHTML}
+                </div>
+                ${mobileMenuHTML}
+            </div>
+        `;
+    };
+
+    defaultTemplates.forEach(template => {
+        dom.defaultTemplateList.innerHTML += createCardHTML(template);
+    });
+
+    customTemplates.forEach(template => {
+        dom.customTemplateList.innerHTML += createCardHTML(template);
     });
     
-    // 绑定事件
-    dom.templateListEl.querySelectorAll('.template-card-clickable').forEach(card => card.addEventListener('click', (e) => {
-        if (e.target.closest('.options-btn')) return; 
-        eventHandlers.onStart(e.currentTarget.dataset.id);
-    }));
+    // --- 统一绑定事件 ---
+    const allCards = document.querySelectorAll('.template-card-clickable');
     
-    dom.templateListEl.querySelectorAll('.options-btn').forEach(btn => btn.addEventListener('click', (e) => {
-        e.stopPropagation(); 
-        const templateId = e.currentTarget.dataset.id;
-        const template = templates.find(t => t.id === templateId);
-        if (!template) return;
+    allCards.forEach(card => {
+        // 点击卡片本身 (非按钮区域)
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('button')) return; 
+            eventHandlers.onStart(e.currentTarget.dataset.id);
+        });
 
-        const rect = e.currentTarget.getBoundingClientRect();
-        showContextMenu(rect.right, rect.bottom, template);
-    }));
+        // 点击桌面端按钮
+        card.querySelectorAll('.duplicate-template-btn').forEach(btn => btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            eventHandlers.onDuplicate(e.target.dataset.id);
+        }));
+        card.querySelectorAll('.delete-template-btn').forEach(btn => btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            eventHandlers.onDelete(e.target.dataset.id);
+        }));
+
+        // 点击移动端选项按钮
+        card.querySelectorAll('.options-btn').forEach(btn => btn.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            const templateId = e.currentTarget.dataset.id;
+            const template = templates.find(t => t.id === templateId);
+            if (!template) return;
+
+            const rect = e.currentTarget.getBoundingClientRect();
+            showContextMenu(rect.right, rect.bottom, template);
+        }));
+    });
 }
 
 /**
@@ -288,13 +330,14 @@ export function showContextMenu(x, y, template) {
     const dangerItemClasses = "text-red-400 hover:bg-gray-700";
 
     let menuItemsHTML = '';
-    if (template.isDefault) {
-        menuItemsHTML = `<button data-id="${template.id}" class="context-menu-item duplicate-template-btn ${menuItemClasses} ${normalItemClasses}">复制并编辑</button>`;
-    } else {
+    // 移动端菜单现在只处理自定义模板的删除
+    if (!template.isDefault) {
         menuItemsHTML = `
-            <button data-id="${template.id}" class="context-menu-item edit-template-btn ${menuItemClasses} ${normalItemClasses}">编辑</button>
+            <button data-id="${template.id}" class="context-menu-item duplicate-template-btn ${menuItemClasses} ${normalItemClasses}">复制</button>
             <button data-id="${template.id}" class="context-menu-item delete-template-btn ${menuItemClasses} ${dangerItemClasses}">删除</button>
         `;
+    } else {
+        menuItemsHTML = `<button data-id="${template.id}" class="context-menu-item duplicate-template-btn ${menuItemClasses} ${normalItemClasses}">复制</button>`;
     }
     dom.contextMenu.innerHTML = menuItemsHTML;
     

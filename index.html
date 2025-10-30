@@ -21,24 +21,44 @@
         </div>
 
         <!-- 主页 -->
-        <div id="home-page" class="hidden">
-            <div class="bg-gray-800/50 backdrop-blur-sm p-6 md:p-8 rounded-2xl shadow-2xl border border-gray-700">
-                <h1 class="text-3xl font-bold text-center text-blue-300 mb-8">随机轮换助手</h1>
-                <div class="mb-6">
-                    <h2 class="text-xl font-semibold text-gray-300 mb-4">选择一个模板</h2>
-                    <div id="template-list" class="space-y-3">
-                        <!-- 模板卡片将在这里动态生成 -->
+        <div id="home-page">
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-[calc(100vh-2rem)] md:h-[800px] md:max-h-[90vh]">
+                <!-- 页眉 -->
+                <div class="flex-shrink-0 p-6 md:p-8 border-b border-gray-700/50">
+                    <h1 class="text-3xl font-bold text-center text-blue-300">随机轮换助手</h1>
+                </div>
+
+                <!-- 模板列表 (可滚动) -->
+                <div class="flex-grow p-6 md:p-8 overflow-y-auto space-y-6">
+                    <!-- 默认模板 -->
+                    <div id="default-templates-section">
+                        <h2 class="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wider">默认模板</h2>
+                        <div id="default-template-list" class="space-y-3">
+                            <!-- 默认模板卡片将在这里动态生成 -->
+                        </div>
+                    </div>
+                    <!-- 用户创建的模板 -->
+                    <div id="custom-templates-section" class="hidden">
+                        <div class="border-t border-gray-700/50 my-6"></div>
+                        <h2 class="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wider">我的模板</h2>
+                        <div id="custom-template-list" class="space-y-3">
+                            <!-- 自定义模板卡片将在这里动态生成 -->
+                        </div>
                     </div>
                 </div>
-                <button id="create-new-template-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-lg">
-                    + 创建新模板
-                </button>
+
+                <!-- 页脚 -->
+                <div class="flex-shrink-0 p-6 md:p-8 border-t border-gray-700/50">
+                    <button id="create-new-template-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-lg">
+                        + 创建新项目
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- 游戏页面 -->
         <div id="game-page" class="hidden">
-            <div class="bg-gray-800/50 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-[90vh] md:max-h-[800px]">
+            <div class="bg-gray-800/50 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-[calc(100vh-2rem)] md:h-[800px] md:max-h-[90vh]">
                 
                 <!-- 页眉 -->
                 <div class="flex-shrink-0 px-4 md:px-6 pt-6 pb-4 grid grid-cols-[auto_1fr_auto] items-center gap-x-2 md:gap-x-4 border-b border-gray-700/50">
@@ -79,7 +99,7 @@
 
         <!-- 设置页面 -->
         <div id="settings-page" class="hidden">
-            <div class="bg-gray-800 p-6 md:p-8 rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-[90vh] md:h-auto md:max-h-[90vh]">
+            <div class="bg-gray-800 p-6 md:p-8 rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-[calc(100vh-2rem)] md:h-auto md:max-h-[90vh]">
                 <div class="flex justify-between items-center mb-6 flex-shrink-0">
                     <h2 id="settings-title" class="text-2xl font-bold text-white">设置</h2>
                     <button id="back-to-game-btn" class="text-gray-400 hover:text-white transition duration-200 text-3xl leading-none">&times;</button>
