@@ -22,7 +22,7 @@
 
         <!-- 主页 -->
         <div id="home-page">
-            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-[calc(100vh-2rem)] md:h-[800px] md:max-h-[90vh]">
+            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-[90vh] md:h-[800px] md:max-h-[90vh]">
                 <!-- 页眉 -->
                 <div class="flex-shrink-0 p-6 md:p-8 border-b border-gray-700/50">
                     <h1 class="text-3xl font-bold text-center text-blue-300">随机轮换助手</h1>
@@ -58,19 +58,17 @@
 
         <!-- 游戏页面 -->
         <div id="game-page" class="hidden">
-            <div class="bg-gray-800/50 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-[calc(100vh-2rem)] md:h-[800px] md:max-h-[90vh]">
+            <div class="bg-gray-800/50 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-[90vh] md:h-[800px] md:max-h-[90vh]">
                 
                 <!-- 页眉 -->
-                <div class="flex-shrink-0 px-4 md:px-6 pt-6 pb-4 grid grid-cols-[auto_1fr_auto] items-center gap-x-2 md:gap-x-4 border-b border-gray-700/50">
-                    <div class="flex justify-start">
-                        <button id="home-btn" class="text-gray-400 hover:text-white transition duration-200 p-2 rounded-full hover:bg-gray-700/50" aria-label="返回主页">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
-                        </button>
-                    </div>
-                    <h1 id="location-text" class="text-lg md:text-xl font-bold text-center text-blue-300 px-1 truncate"></h1>
-                    <div id="settings-btn-container" class="flex justify-end">
+                <div class="relative flex-shrink-0 p-6 md:p-8 flex justify-center items-center border-b border-gray-700/50">
+                    <button id="home-btn" class="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition duration-200 p-2 rounded-full hover:bg-gray-700/50" aria-label="返回主页">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </button>
+                    <h1 id="location-text" class="text-lg md:text-xl font-bold text-center text-blue-300 px-14 md:px-16"></h1>
+                    <div id="settings-btn-container" class="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 flex justify-end">
                         <button id="settings-btn" class="text-gray-400 hover:text-white transition duration-200 p-2 rounded-full hover:bg-gray-700/50" aria-label="打开设置">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -86,7 +84,7 @@
                 </div>
 
                 <!-- 页脚 -->
-                <div class="flex-shrink-0 px-6 pb-6 pt-4 flex flex-col md:flex-row gap-4 border-t border-gray-700/50">
+                <div class="flex-shrink-0 p-6 md:p-8 flex flex-col md:flex-row gap-4 border-t border-gray-700/50">
                     <button id="toggle-pause-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-lg">
                         开始
                     </button>
@@ -109,12 +107,12 @@
                     
                     <div>
                         <label for="setting-template-name" class="block text-sm font-medium text-gray-300 mb-2">模板名称</label>
-                        <input type="text" id="setting-template-name" class="w-full bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="例如: 我的随机人设">
+                        <input type="text" id="setting-template-name" class="w-full bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="例如: 我的随机人设" maxlength="20">
                     </div>
                     
                     <div>
                         <label for="setting-location" class="block text-sm font-medium text-gray-300 mb-2">情景/标题</label>
-                        <input type="text" id="setting-location" class="w-full bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="setting-location" class="w-full bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" maxlength="30">
                     </div>
                     
                     <div class="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
@@ -168,7 +166,7 @@
             
             <div id="modal-input-container" class="hidden my-4">
                 <label id="modal-input-label" for="modal-input" class="block text-sm font-medium text-gray-300 mb-2">名称</label>
-                <input type="text" id="modal-input" class="w-full bg-gray-600 border border-gray-500 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="modal-input" class="w-full bg-gray-600 border border-gray-500 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" maxlength="20">
             </div>
 
             <div id="modal-segment-container" class="hidden my-4">

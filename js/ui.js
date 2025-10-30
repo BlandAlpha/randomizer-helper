@@ -2,6 +2,7 @@
 // 负责所有与 UI 渲染相关的函数
 
 import * as dom from './dom.js';
+import { adjustFontSize } from './game.js';
 
 let toastTimeout = null;
 
@@ -115,6 +116,7 @@ export function renderHomePage(templates, eventHandlers) {
 export function populateUI(currentSettings) {
     if (!dom.locationTextEl || !dom.rotatorGridEl) return;
     dom.locationTextEl.textContent = currentSettings.locationText;
+    adjustFontSize(dom.locationTextEl); // 动态调整标题字号
     dom.rotatorGridEl.innerHTML = '';
     currentSettings.rotators.forEach(rotator => {
         const rotatorEl = document.createElement('div');

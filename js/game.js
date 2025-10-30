@@ -12,7 +12,7 @@ let getSettings = () => ({}); // 获取当前设置的函数
  * 动态调整元素内的字体大小以适应容器
  * @param {HTMLElement} el - 需要调整字体大小的元素
  */
-function adjustFontSize(el) {
+export function adjustFontSize(el) {
     // 恢复默认字体大小，以处理文本变短的情况
     el.style.fontSize = '';
 
