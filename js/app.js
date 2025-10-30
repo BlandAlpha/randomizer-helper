@@ -517,6 +517,7 @@ window.addEventListener('DOMContentLoaded', () => {
         let isDown = false;
         let isDragging = false;
         let startX;
+        let startY; // 新增: 记录Y坐标
         let scrollLeft;
         let velocity = 0;
         let rafId;
@@ -527,7 +528,9 @@ window.addEventListener('DOMContentLoaded', () => {
             isDragging = false;
             slider.classList.add('active');
             const pageX = e.pageX ?? e.touches[0].pageX;
+            const pageY = e.pageY ?? e.touches[0].pageY; // 新增
             startX = pageX - slider.offsetLeft;
+            startY = pageY - slider.offsetTop; // 新增
             scrollLeft = slider.scrollLeft;
             velocity = 0;
             lastX = pageX;
@@ -571,7 +574,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
             if (isDragging) {
                 slider.setAttribute('data-was-dragged', 'true');
-                setTimeout(() => slider.removeAttribute('data-was-dragged'), 0);
             }
             
             rafId = requestAnimationFrame(momentumScroll);

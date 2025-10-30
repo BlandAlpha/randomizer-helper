@@ -18,8 +18,8 @@ export function renderHomePage(templates, eventHandlers) {
     // --- 1. 渲染默认模板 (新: 横向大卡片) ---
     const defaultList = dom.defaultTemplateList;
     defaultList.innerHTML = '';
-    // 更新容器样式以支持横向滚动, 增加 py-4 px-2 内边距为缩放提供空间
-    defaultList.className = 'flex overflow-x-auto space-x-4 py-4 px-2 hide-scrollbar';
+    // 更新容器样式以支持横向滚动
+    defaultList.className = 'flex overflow-x-auto space-x-4 p-4 hide-scrollbar';
 
     const templateMetadata = {
         'default-ow-uuid': { color: 'from-cyan-400 to-blue-600', logo: 'overwatch.png' },
@@ -38,14 +38,14 @@ export function renderHomePage(templates, eventHandlers) {
     defaultTemplates.forEach(template => {
         const metadata = templateMetadata[template.id] || { color: 'from-gray-800 to-gray-900', logo: null };
         const logoDiv = metadata.logo 
-            ? `<div class="absolute inset-0 bg-no-repeat bg-center opacity-20" style="background-image: url('imgs/${metadata.logo}'); background-size: 80%;"></div>` 
+            ? `<div class="absolute inset-0 bg-no-repeat bg-center opacity-60" style="background-image: url('imgs/${metadata.logo}'); background-size: 50%;"></div>` 
             : '';
 
         const cardHTML = `
-            <div data-id="${template.id}" class="template-card-clickable flex-shrink-0 w-60 h-36 md:w-72 md:h-40 rounded-xl cursor-pointer transition-transform hover:scale-105 overflow-hidden">
+            <div data-id="${template.id}" class="template-card-clickable select-none flex-shrink-0 w-60 h-36 md:w-72 md:h-40 rounded-xl cursor-pointer transition-transform hover:scale-105 overflow-hidden">
                 <div class="relative w-full h-full p-4 flex flex-col justify-end bg-gradient-to-br ${metadata.color}">
                     ${logoDiv}
-                    <h3 class="relative text-white text-xl font-bold z-10 select-none">${template.name}</h3>
+                    <h3 class="relative text-white text-xl font-bold z-10">${template.name}</h3>
                     <button data-id="${template.id}" aria-label="复制模板" class="duplicate-template-btn absolute top-3 right-3 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors z-10">
                         ${copyIconSVG}
                     </button>
@@ -77,11 +77,12 @@ export function renderHomePage(templates, eventHandlers) {
     allCards.forEach(card => {
         // 点击卡片本身 (非按钮区域)
         card.addEventListener('click', (e) => {
-            // 新增: 如果卡片的父容器 (滚动条) 被标记为拖拽过, 则阻止点击事件
-            const slider = e.currentTarget.parentElement;
-            if (slider && slider.getAttribute('data-was-dragged') === 'true') {
+            const container = e.currentTarget.parentElement;
+            // 检查容器上是否有拖拽标记
+            if (container && container.getAttribute('data-was-dragged') === 'true') {
                 e.preventDefault();
                 e.stopPropagation();
+                container.removeAttribute('data-was-dragged');
                 return;
             }
 
