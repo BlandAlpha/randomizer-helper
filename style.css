@@ -1,0 +1,140 @@
+/* 导入字体 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+
+/* 全局样式 */
+body { 
+    font-family: 'Inter', sans-serif; 
+    -webkit-font-smoothing: antialiased; 
+    -moz-osx-font-smoothing: grayscale; 
+}
+
+/* 加载动画 */
+#loader-spinner { 
+    border: 4px solid #f3f3f3; 
+    border-top: 4px solid #3498db; 
+    border-radius: 50%; 
+    width: 40px; 
+    height: 40px; 
+    animation: spin 1s linear infinite; 
+}
+@keyframes spin { 
+    0% { transform: rotate(0deg); } 
+    100% { transform: rotate(360deg); } 
+}
+
+/* 设置页滚动条 */
+.settings-form-container::-webkit-scrollbar { 
+    width: 6px; 
+}
+.settings-form-container::-webkit-scrollbar-track { 
+    background: #4a5568; 
+    border-radius: 3px; 
+}
+.settings-form-container::-webkit-scrollbar-thumb { 
+    background: #718096; 
+    border-radius: 3px; 
+}
+.settings-form-container::-webkit-scrollbar-thumb:hover { 
+    background: #a0aec0; 
+}
+
+/* Toast 提示 */
+#toast-notification { 
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; 
+}
+
+/* 范围滑块 (Speed) */
+input[type=range] { 
+    -webkit-appearance: none; 
+    width: 100%; 
+    margin: 6px 0; 
+}
+input[type=range]:focus { 
+    outline: none; 
+}
+input[type=range]::-webkit-slider-runnable-track { 
+    width: 100%; 
+    height: 8px; 
+    cursor: pointer; 
+    background: #4a5568; 
+    border-radius: 10px; 
+}
+input[type=range]::-webkit-slider-thumb { 
+    -webkit-appearance: none; 
+    height: 20px; 
+    width: 20px; 
+    border-radius: 50%; 
+    background: #3b82f6; 
+    cursor: pointer; 
+    margin-top: -6px; 
+    transition: background 0.2s; 
+}
+input[type=range]:hover::-webkit-slider-thumb { 
+    background: #2563eb; 
+}
+input[type=range]::-moz-range-track { 
+    width: 100%; 
+    height: 8px; 
+    cursor: pointer; 
+    background: #4a5568; 
+    border-radius: 10px; 
+}
+input[type=range]::-moz-range-thumb { 
+    height: 20px; 
+    width: 20px; 
+    border-radius: 50%; 
+    background: #3b82f6; 
+    cursor: pointer; 
+    border: none; 
+}
+input[type=range]:hover::-moz-range-thumb { 
+    background: #2563eb; 
+}
+
+/* 切换开关 */
+.switch { 
+    position: relative; 
+    display: inline-block; 
+    width: 60px; 
+    height: 34px; 
+}
+.switch input { 
+    opacity: 0; 
+    width: 0; 
+    height: 0; 
+}
+.slider { 
+    position: absolute; 
+    cursor: pointer; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0; 
+    background-color: #4a5568; 
+    transition: .4s; 
+    border-radius: 34px; 
+}
+.slider:before { 
+    position: absolute; 
+    content: ""; 
+    height: 26px; 
+    width: 26px; 
+    left: 4px; 
+    bottom: 4px; 
+    background-color: white; 
+    transition: .4s; 
+    border-radius: 50%; 
+}
+input:checked + .slider { 
+    background-color: #3b82f6; 
+}
+input:checked + .slider:before { 
+    transform: translateX(26px); 
+}
+input:disabled + .slider { 
+    background-color: #374151; 
+    cursor: not-allowed; 
+}
+input:disabled + .slider:before { 
+    background-color: #9ca3af; 
+}

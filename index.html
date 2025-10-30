@@ -4,28 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>随机轮换助手</title>
-    <!-- 引入Tailwind CSS -->
+    <!-- 1. 引入 Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* (样式表保持不变) */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-        #loader-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .settings-form-container::-webkit-scrollbar { width: 6px; }
-        .settings-form-container::-webkit-scrollbar-track { background: #4a5568; border-radius: 3px; }
-        .settings-form-container::-webkit-scrollbar-thumb { background: #718096; border-radius: 3px; }
-        .settings-form-container::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
-        #toast-notification { transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; }
-        input[type=range] { -webkit-appearance: none; width: 100%; margin: 6px 0; }
-        input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #4a5568; border-radius: 10px; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -6px; transition: background 0.2s; }
-        input[type=range]:hover::-webkit-slider-thumb { background: #2563eb; }
-        input[type=range]::-moz-range-track { width: 100%; height: 8px; cursor: pointer; background: #4a5568; border-radius: 10px; }
-        input[type=range]::-moz-range-thumb { height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; cursor: pointer; border: none; }
-        input[type=range]:hover::-moz-range-thumb { background: #2563eb; }
-    </style>
+    <!-- 2. 引入分离的 CSS 文件 -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen p-4 md:py-10">
 
@@ -36,6 +18,22 @@
         <div id="loader" class="flex flex-col items-center justify-center p-10">
             <div id="loader-spinner"></div>
             <p class="mt-4 text-lg">正在加载...</p>
+        </div>
+
+        <!-- 主页 -->
+        <div id="home-page" class="hidden">
+            <div class="bg-gray-800/50 backdrop-blur-sm p-6 md:p-8 rounded-2xl shadow-2xl border border-gray-700">
+                <h1 class="text-3xl font-bold text-center text-blue-300 mb-8">随机轮换助手</h1>
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-gray-300 mb-4">选择一个模板</h2>
+                    <div id="template-list" class="space-y-3">
+                        <!-- 模板卡片将在这里动态生成 -->
+                    </div>
+                </div>
+                <button id="create-new-template-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-lg">
+                    + 创建新模板
+                </button>
+            </div>
         </div>
 
         <!-- 游戏页面 -->
@@ -51,7 +49,10 @@
                         重新开始
                     </button>
                 </div>
-                <div class="mt-6 text-center">
+                <div class="mt-6 flex justify-between items-center">
+                    <button id="home-btn" class="text-gray-400 hover:text-white transition duration-200">
+                        &larr; 返回主页
+                    </button>
                     <button id="settings-btn" class="text-gray-400 hover:text-white transition duration-200">
                         ⚙️ 打开设置
                     </button>
@@ -62,64 +63,89 @@
         <!-- 设置页面 -->
         <div id="settings-page" class="hidden">
             <div class="bg-gray-800 p-6 md:p-8 rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-[90vh] md:h-auto md:max-h-[90vh]">
-                <!-- 1. 页头 (固定) -->
                 <div class="flex justify-between items-center mb-6 flex-shrink-0">
-                    <h2 class="text-2xl font-bold text-white">设置</h2>
-                    <button id="back-btn" class="text-gray-400 hover:text-white transition duration-200 text-3xl leading-none">&times;</button>
+                    <h2 id="settings-title" class="text-2xl font-bold text-white">设置</h2>
+                    <button id="back-to-game-btn" class="text-gray-400 hover:text-white transition duration-200 text-3xl leading-none">&times;</button>
                 </div>
 
-                <!-- 2. 表单内容 (可滚动) -->
                 <div class="flex-grow overflow-y-auto space-y-6 pr-2 settings-form-container">
-                    <!-- 地点编辑 -->
+                    
                     <div>
-                        <label for="setting-location" class="block text-sm font-medium text-gray-300 mb-2">地点/情景</label>
+                        <label for="setting-template-name" class="block text-sm font-medium text-gray-300 mb-2">模板名称</label>
+                        <input type="text" id="setting-template-name" class="w-full bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="例如: 我的随机人设">
+                    </div>
+                    
+                    <div>
+                        <label for="setting-location" class="block text-sm font-medium text-gray-300 mb-2">情景/标题</label>
                         <input type="text" id="setting-location" class="w-full bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
-                    <!-- 轮换速度 -->
+
                     <div>
                         <label for="setting-speed" class="block text-sm font-medium text-gray-300 mb-2">
                             轮换速度: <span id="setting-speed-value" class="font-bold text-white">30 个/秒</span>
                         </label>
                         <input type="range" id="setting-speed" min="15" max="60" value="30" class="w-full">
                     </div>
-                    <!-- 轮换位编辑 -->
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                        <label for="setting-share-pool" class="text-sm font-medium text-gray-300">
+                            共享轮换池
+                            <span class="text-xs text-gray-400 block">(V8功能: 暂时禁用)</span>
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-share-pool" checked disabled>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
                     <div>
                         <label class="block text-sm font-medium text-gray-300 mb-2">轮换位 (名称和数量)</label>
-                        <div id="settings-rotators-container" class="space-y-3"></div>
+                        <div id="settings-rotators-container" class="space-y-3">
+                        </div>
                         <button id="add-rotator-btn" class="mt-3 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 w-full">
                             + 增加一个轮换位
                         </button>
                     </div>
-                    <!-- 轮换池编辑 -->
-                    <div>
+
+                    <div id="shared-pool-container">
                         <label for="setting-pool" class="block text-sm font-medium text-gray-300 mb-2">轮换池 (每行一个)</label>
                         <textarea id="setting-pool" rows="10" class="w-full bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                     </div>
                 </div>
 
-                <!-- 3. 操作按钮 (固定在底部) -->
-                <!-- 新增: space-y-3, 新增 reset-default-btn -->
                 <div class="mt-6 flex-shrink-0 space-y-3">
                     <button id="save-settings-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-lg">
-                        保存设置
+                        保存并返回
                     </button>
-                    <button id="reset-default-btn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-                        恢复默认设置
+                    <button id="reset-template-btn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                        重置模板 (恢复到上次保存)
+                    </button>
+                    <button id="delete-template-btn" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                        删除此模板
+                    </button>
+                    <button id="home-btn-settings" class="w-full bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold py-2 px-4 rounded-lg transition duration-200">
+                        &larr; 返回主页 (不保存)
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 模态框 (保持不变) -->
+    <!-- 模态框 -->
     <div id="confirmation-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-gray-700 text-white p-6 rounded-lg shadow-xl w-full max-w-sm">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold">未保存的更改</h3>
+                <h3 id="modal-title" class="text-lg font-bold">未保存的更改</h3>
                 <button id="modal-close-btn" class="text-gray-400 hover:text-white text-2xl">&times;</button>
             </div>
-            <p class="text-gray-300 mb-6">你有未保存的更改。你要做什么？</p>
-            <div class="flex flex-col gap-3">
+            <p id="modal-message" class="text-gray-300 my-6">你有未保存的更改。你要做什么？</p>
+            
+            <div id="modal-input-container" class="hidden my-4">
+                <label id="modal-input-label" for="modal-input" class="block text-sm font-medium text-gray-300 mb-2">名称</label>
+                <input type="text" id="modal-input" class="w-full bg-gray-600 border border-gray-500 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div id="modal-buttons-save-discard" class="flex flex-col gap-3">
                 <button id="modal-save-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">
                     保存
                 </button>
@@ -127,384 +153,25 @@
                     丢弃
                 </button>
             </div>
+            
+            <div id="modal-buttons-confirm-cancel" class="hidden flex flex-col gap-3">
+                <button id="modal-confirm-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                    确认
+                </button>
+                <button id="modal-cancel-btn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition">
+                    取消
+                </button>
+            </div>
         </div>
     </div>
     
-    <!-- Toast 提示 (保持不变) -->
+    <!-- Toast 提示 -->
     <div id="toast-notification" class="hidden opacity-0 fixed bottom-5 left-1/2 -translate-x-1/2 bg-green-600 text-white py-2 px-5 rounded-lg shadow-lg z-40">
         设置已保存
     </div>
 
+    <!-- 3. 引入 ES 模块的主 JS 文件 -->
+    <script type="module" src="js/app.js"></script>
 
-    <script>
-        // --- 全局状态和配置 ---
-        const LOCAL_STORAGE_KEY = 'overwatchRotatorSettings_v1';
-        const defaultPool = [
-            "末日铁拳", "D.Va", "骇灾", "渣客女王", "毛加", "奥丽莎", "拉玛刹",
-            "莱因哈特", "路霸", "西格玛", "温斯顿", "破坏球", "查莉娅", "艾什",
-            "堡垒", "卡西迪", "回声", "弗蕾娅", "源氏", "半藏", "狂鼠", "美",
-            "法老之鹰", "死神", "索杰恩", "士兵：76", "黑影", "秩序之光",
-            "托比昂", "猎空", "探奇", "黑百合", "安娜", "巴蒂斯特", "布丽吉塔",
-            "伊拉锐", "朱诺", "雾子", "生命之梭", "卢西奥", "天使", "莫伊拉", "无漾"
-        ];
-        const defaultSettings = {
-            locationText: "当你穿越到守望先锋你的",
-            rotators: [
-                { id: 0, label: "父亲是" }, { id: 1, label: "母亲是" },
-                { id: 2, label: "爱人是" }, { id: 3, label: "孩子是" }
-            ],
-            pool: defaultPool,
-            speed: 30
-        };
-
-        // --- 应用状态 ---
-        let settings = { ...defaultSettings };
-        let isRunning = false;
-        let intervalId = null;
-        let lastRotatorValues = {};
-        let settingsHaveChanged = false;
-        let toastTimeout = null;
-
-        // --- DOM 元素 ---
-        let loader, gamePage, settingsPage, locationTextEl, rotatorGridEl,
-            togglePauseButton, restartButton, settingsButton, backButton,
-            saveSettingsButton, addRotatorButton, settingLocationInput,
-            settingsRotatorsContainer, settingPoolTextarea,
-            settingSpeedSlider, settingSpeedValueDisplay;
-        let confirmationModal, modalCloseBtn, modalSaveBtn, modalDiscardBtn, toastNotification;
-        
-        // 新增: 重置按钮
-        let resetDefaultButton;
-
-        // --- 数据加载 (localStorage) ---
-        function loadSettings() {
-            // (此函数保持不变)
-            settings = { ...defaultSettings };
-            try {
-                const savedSettings = localStorage.getItem(LOCAL_STORAGE_KEY);
-                if (savedSettings) {
-                    const parsed = JSON.parse(savedSettings);
-                    settings = { ...settings, ...parsed };
-                }
-                let speedNum = parseInt(settings.speed, 10);
-                if (isNaN(speedNum) || speedNum < 15 || speedNum > 60) {
-                    settings.speed = defaultSettings.speed;
-                } else {
-                    settings.speed = speedNum;
-                }
-                if (!settings.pool || settings.pool.length === 0) settings.pool = defaultSettings.pool;
-                if (!settings.rotators) settings.rotators = defaultSettings.rotators;
-                if (!settings.locationText) settings.locationText = defaultSettings.locationText;
-                console.log("净化后加载的设置:", settings);
-            } catch (e) {
-                console.error("加载本地设置失败, 使用默认设置:", e);
-                settings = { ...defaultSettings };
-            }
-        }
-
-        // --- UI 渲染 ---
-        function populateUI() {
-            // (此函数保持不变)
-            if (!locationTextEl || !rotatorGridEl) return;
-            locationTextEl.textContent = settings.locationText;
-            rotatorGridEl.innerHTML = '';
-            settings.rotators.forEach(rotator => {
-                const rotatorEl = document.createElement('div');
-                rotatorEl.className = "flex flex-col items-center p-4 bg-gray-800 rounded-xl shadow-lg w-full";
-                rotatorEl.innerHTML = `
-                    <span class="text-lg text-gray-400 mb-2">${rotator.label}</span>
-                    <div id="rotator-value-${rotator.id}" class="text-2xl md:text-3xl font-bold text-yellow-400 h-10 flex items-center justify-center overflow-hidden">
-                        ---
-                    </div>
-                `;
-                rotatorGridEl.appendChild(rotatorEl);
-            });
-        }
-
-        function populateSettingsForm() {
-            // (此函数保持不变)
-            if (!settingLocationInput || !settingsRotatorsContainer || !settingPoolTextarea || !settingSpeedSlider) return;
-            settingLocationInput.value = settings.locationText;
-            settingPoolTextarea.value = settings.pool.join('\n');
-            settingSpeedSlider.value = settings.speed;
-            settingSpeedValueDisplay.textContent = `${settings.speed} 个/秒`;
-            settingsRotatorsContainer.innerHTML = '';
-            settings.rotators.forEach(rotator => {
-                addRotatorField(rotator.label, false);
-            });
-        }
-
-        // --- 游戏逻辑 (保持不变) ---
-        function startGame() {
-            if (isRunning) return;
-            isRunning = true;
-            togglePauseButton.textContent = '暂停';
-            togglePauseButton.classList.remove('bg-green-600', 'hover:bg-green-700');
-            togglePauseButton.classList.add('bg-red-600', 'hover:bg-red-700');
-            
-            let currentSpeed = parseInt(settings.speed, 10) || defaultSettings.speed;
-            if (currentSpeed < 15 || currentSpeed > 60) {
-                currentSpeed = defaultSettings.speed;
-            }
-            let intervalInMs = 1000 / currentSpeed;
-            if (isNaN(intervalInMs) || !isFinite(intervalInMs)) {
-                intervalInMs = 1000 / defaultSettings.speed;
-            }
-            
-            if (intervalId) clearInterval(intervalId);
-            intervalId = setInterval(updateRotators, intervalInMs); 
-        }
-
-        function stopGame() {
-            isRunning = false;
-            if (intervalId) {
-                clearInterval(intervalId);
-                intervalId = null;
-            }
-            if (togglePauseButton) {
-                togglePauseButton.textContent = '开始';
-                togglePauseButton.classList.remove('bg-red-600', 'hover:bg-red-700');
-                togglePauseButton.classList.add('bg-green-600', 'hover:bg-green-700');
-            }
-        }
-        
-        function togglePause() {
-            if (isRunning) {
-                stopGame();
-                togglePauseButton.textContent = '已暂停 (点此继续)'; 
-            } else {
-                startGame();
-            }
-        }
-
-        function resetGame() {
-            if (isRunning) stopGame();
-            lastRotatorValues = {};
-            populateUI();
-            togglePauseButton.textContent = '开始';
-            togglePauseButton.classList.remove('bg-red-600', 'hover:bg-red-700');
-            togglePauseButton.classList.add('bg-green-600', 'hover:bg-green-700');
-        }
-
-        function updateRotators() {
-            settings.rotators.forEach(rotator => {
-                const el = document.getElementById(`rotator-value-${rotator.id}`);
-                if (el) el.textContent = getRandomFromPool(rotator.id);
-            });
-        }
-
-        function getRandomFromPool(rotatorId) {
-            const pool = settings.pool;
-            if (!pool || pool.length === 0) return '???';
-            if (pool.length === 1) return pool[0];
-            const lastValue = lastRotatorValues[rotatorId];
-            let newValue = '';
-            do {
-                newValue = pool[Math.floor(Math.random() * pool.length)];
-            } while (newValue === lastValue);
-            lastRotatorValues[rotatorId] = newValue;
-            return newValue;
-        }
-
-        // --- 页面导航 (保持不变) ---
-        function showSettings() {
-            settingsHaveChanged = false;
-            gamePage.classList.add('hidden');
-            settingsPage.classList.remove('hidden');
-        }
-
-        function showGame() {
-            settingsPage.classList.add('hidden');
-            gamePage.classList.remove('hidden');
-        }
-        
-        // --- Toast 提示 (保持不变) ---
-        function showToast(message, isError = false) {
-            if (toastTimeout) clearTimeout(toastTimeout);
-            toastNotification.textContent = message;
-            toastNotification.classList.remove('hidden', 'opacity-0', 'bg-green-600', 'bg-red-600');
-            if (isError) {
-                toastNotification.classList.add('bg-red-600');
-            } else {
-                toastNotification.classList.add('bg-green-600');
-            }
-            void toastNotification.offsetWidth; 
-            toastNotification.classList.remove('opacity-0');
-            toastTimeout = setTimeout(() => {
-                toastNotification.classList.add('opacity-0');
-                setTimeout(() => toastNotification.classList.add('hidden'), 300);
-            }, 3000);
-        }
-
-        // --- 设置页面逻辑 ---
-        function addRotatorField(value = '', markAsChange = true) {
-            // (此函数保持不变)
-            const fieldEl = document.createElement('div');
-            fieldEl.className = "flex items-center space-x-2 w-full";
-            fieldEl.innerHTML = `
-                <input type="text" value="${value}" class="flex-grow bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="轮换位名称 (如: 敌人是)">
-                <button class="remove-rotator-btn bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-lg w-10">-</button>
-            `;
-            settingsRotatorsContainer.appendChild(fieldEl);
-            if (markAsChange) settingsHaveChanged = true;
-            fieldEl.querySelector('.remove-rotator-btn').addEventListener('click', () => {
-                fieldEl.remove();
-                settingsHaveChanged = true;
-            });
-            fieldEl.querySelector('input').addEventListener('input', () => {
-                settingsHaveChanged = true;
-            });
-        }
-
-        // 保存设置到 localStorage
-        function saveSettings() {
-            // (此函数保持不变)
-            loader.classList.remove('hidden');
-            gamePage.classList.add('hidden');
-            settingsPage.classList.add('hidden');
-
-            if (isRunning) stopGame();
-
-            const newLocationText = settingLocationInput.value;
-            const newSpeed = parseInt(settingSpeedSlider.value, 10); 
-            const newPool = settingPoolTextarea.value.split('\n').map(s => s.trim()).filter(Boolean);
-            const newRotators = [];
-            const rotatorInputs = settingsRotatorsContainer.querySelectorAll('input');
-            rotatorInputs.forEach((input, index) => {
-                if (input.value) newRotators.push({ id: index, label: input.value });
-            });
-            const newSettings = {
-                locationText: newLocationText, pool: newPool,
-                rotators: newRotators, speed: newSpeed
-            };
-
-            try {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newSettings));
-                settings = newSettings;
-                settingsHaveChanged = false;
-                
-                populateUI();
-                populateSettingsForm(); 
-                showGame();
-                showToast("设置已保存");
-                
-            } catch (e) {
-                console.error("保存设置失败:", e);
-                showSettings();
-                showToast("保存失败!", true);
-            } finally {
-                loader.classList.add('hidden');
-                stopGame(); 
-            }
-        }
-        
-        /**
-         * 新增: 将设置表单中的所有字段重置为
-         * 应用程序的默认值。
-         * 这不会自动保存，用户仍需点击 "保存"。
-         */
-        function resetFormToDefault() {
-            console.log("重置表单为默认值...");
-            
-            // 1. 将一个 *新的* 默认设置对象复制到全局设置变量中
-            //    (我们用它来填充表单, 它不是已保存的状态)
-            //    我们必须使用 structuredClone 来深度复制, 以防 pool 数组被引用
-            settings = structuredClone(defaultSettings);
-            
-            // 2. 重新填充表单以在UI上显示默认值
-            populateSettingsForm();
-            
-            // 3. 标记为“已更改”，以便“保存”按钮或“丢弃”逻辑能正常工作
-            settingsHaveChanged = true;
-            
-            // 4. 通知用户
-            showToast("已重置为默认值，请点击保存");
-        }
-
-
-        // --- DOM 加载后执行 ---
-        window.addEventListener('DOMContentLoaded', () => {
-            // (获取所有 DOM 元素...)
-            loader = document.getElementById('loader');
-            gamePage = document.getElementById('game-page');
-            settingsPage = document.getElementById('settings-page');
-            locationTextEl = document.getElementById('location-text');
-            rotatorGridEl = document.getElementById('rotator-grid');
-            togglePauseButton = document.getElementById('toggle-pause-btn');
-            restartButton = document.getElementById('restart-btn');
-            settingsButton = document.getElementById('settings-btn');
-            backButton = document.getElementById('back-btn');
-            saveSettingsButton = document.getElementById('save-settings-btn');
-            addRotatorButton = document.getElementById('add-rotator-btn');
-            settingLocationInput = document.getElementById('setting-location');
-            settingsRotatorsContainer = document.getElementById('settings-rotators-container');
-            settingPoolTextarea = document.getElementById('setting-pool');
-            settingSpeedSlider = document.getElementById('setting-speed');
-            settingSpeedValueDisplay = document.getElementById('setting-speed-value');
-            confirmationModal = document.getElementById('confirmation-modal');
-            modalCloseBtn = document.getElementById('modal-close-btn');
-            modalSaveBtn = document.getElementById('modal-save-btn');
-            modalDiscardBtn = document.getElementById('modal-discard-btn');
-            toastNotification = document.getElementById('toast-notification');
-            
-            // 新增: 获取重置按钮
-            resetDefaultButton = document.getElementById('reset-default-btn');
-
-            // (绑定事件监听...)
-            togglePauseButton.addEventListener('click', togglePause);
-            restartButton.addEventListener('click', resetGame);
-            settingsButton.addEventListener('click', showSettings);
-            saveSettingsButton.addEventListener('click', saveSettings);
-            addRotatorButton.addEventListener('click', () => addRotatorField());
-            
-            // 新增: 绑定重置按钮
-            resetDefaultButton.addEventListener('click', resetFormToDefault);
-            
-            backButton.addEventListener('click', () => {
-                if (settingsHaveChanged) {
-                    confirmationModal.classList.remove('hidden');
-                } else {
-                    showGame();
-                }
-            });
-            modalCloseBtn.addEventListener('click', () => confirmationModal.classList.add('hidden'));
-            
-            // *** 关键修复: "丢弃" 逻辑 ***
-            modalDiscardBtn.addEventListener('click', () => {
-                confirmationModal.classList.add('hidden');
-                showGame();
-                
-                // 1. 重新从 localStorage 加载上次保存的设置, 覆盖内存中的更改
-                loadSettings(); 
-                // 2. 用刚加载的 (未更改的) 设置重新填充表单
-                populateSettingsForm(); 
-                
-                showToast("修改已丢弃");
-            });
-            
-            modalSaveBtn.addEventListener('click', () => {
-                confirmationModal.classList.add('hidden');
-                saveSettings();
-            });
-            settingLocationInput.addEventListener('input', () => settingsHaveChanged = true);
-            settingPoolTextarea.addEventListener('input', () => settingsHaveChanged = true);
-            settingSpeedSlider.addEventListener('input', (e) => {
-                settingSpeedValueDisplay.textContent = `${e.target.value} 个/秒`;
-                settingsHaveChanged = true;
-            });
-            
-            // --- 初始化流程 (保持不变) ---
-            loadSettings();
-            populateUI();
-            populateSettingsForm();
-            
-            loader.classList.add('hidden');
-            gamePage.classList.remove('hidden');
-            
-            stopGame(); // 确保在 "已暂停" 状态下启动
-        });
-    </script>
 </body>
 </html>
-
-
