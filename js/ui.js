@@ -25,7 +25,7 @@ export function renderHomePage(templates, eventHandlers) {
         'default-ow-uuid': { color: 'from-cyan-400 to-blue-600', logo: 'overwatch.png' },
         'default-arknights-uuid': { color: 'from-slate-800 to-gray-900', logo: 'arknights.png' },
         'default-coc-uuid': { color: 'from-emerald-800 to-teal-900', logo: 'coc.png' },
-        'default-superpower-uuid': { color: 'from-purple-800 to-violet-900', logo: null },
+        'default-superpower-uuid': { color: 'from-red-900 to-yellow-600', logo: 'flash.png' },
     };
 
     const copyIconSVG = `
@@ -117,7 +117,7 @@ export function renderHomePage(templates, eventHandlers) {
  */
 function createCustomProjectCardHTML(template) {
     const baseClasses = "template-card-clickable p-4 rounded-lg flex items-center justify-between gap-3 cursor-pointer transition-colors";
-    const styleClasses = 'bg-gray-700 hover:bg-gray-600';
+    const styleClasses = 'bg-gray-800 hover:bg-gray-700';
 
     const nameHTML = `
         <div class="flex-grow flex items-center overflow-hidden mr-2 pointer-events-none">

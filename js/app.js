@@ -60,11 +60,13 @@ function loadTemplate(templateId) {
     // 使用 resetGame 来确保进入页面时是初始状态
     game.resetGame(() => ui.populateUI(template));
     
-    // 根据是否为默认模板，显示或隐藏设置按钮
+    // 根据是否为默认模板，显示或隐藏设置/复制按钮
     if (template.isDefault) {
         dom.settingsBtnContainer.classList.add('hidden');
+        dom.copyBtnContainer.classList.remove('hidden');
     } else {
         dom.settingsBtnContainer.classList.remove('hidden');
+        dom.copyBtnContainer.classList.add('hidden');
     }
     
     showGame();
@@ -114,7 +116,7 @@ function handleDuplicateTemplate(templateId) {
         storage.saveAppData(appData);
         
         ui.hideModal();
-        showHomePage(); // 留在主页并刷新列表
+        loadTemplate(newTemplate.id); // 复制后直接打开
         ui.showToast(`项目 "${newName}" 已创建`);
     };
     
@@ -352,6 +354,11 @@ window.addEventListener('DOMContentLoaded', () => {
     dom.togglePauseButton.addEventListener('click', game.togglePause);
     dom.restartButton.addEventListener('click', () => {
         game.resetGame(() => ui.populateUI(currentSettings));
+    });
+    dom.copyBtn.addEventListener('click', () => {
+        if (appData.activeTemplateId) {
+            handleDuplicateTemplate(appData.activeTemplateId);
+        }
     });
     dom.settingsButton.addEventListener('click', () => {
         // 加载当前模板到设置页
