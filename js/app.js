@@ -50,7 +50,11 @@ function loadTemplate(templateId) {
     }
     
     appData.activeTemplateId = templateId;
-    currentSettings = structuredClone(template.config); 
+    // 修正: 将 isSharedPool 和 config 一起复制到 currentSettings
+    currentSettings = {
+        ...structuredClone(template.config),
+        isSharedPool: template.isSharedPool 
+    };
     
     storage.saveAppData(appData); // 保存 activeTemplateId
     
@@ -68,7 +72,11 @@ function editTemplate(templateId) {
     }
     
     appData.activeTemplateId = templateId;
-    currentSettings = structuredClone(template.config); 
+    // 修正: 将 isSharedPool 和 config 一起复制到 currentSettings
+    currentSettings = {
+        ...structuredClone(template.config),
+        isSharedPool: template.isSharedPool
+    };
     
     ui.populateSettingsForm(template, handleAddRotatorField);
     // 新增: 设置独立池按钮的初始可见性
@@ -201,7 +209,11 @@ function saveSettings() {
     };
     
     // 将更新后的配置加载为 currentSettings
-    currentSettings = structuredClone(template.config);
+    // 修正: 确保 currentSettings 也包含 isSharedPool
+    currentSettings = {
+        ...structuredClone(template.config),
+        isSharedPool: template.isSharedPool
+    };
     
     storage.saveAppData(appData);
     settingsHaveChanged = false;
