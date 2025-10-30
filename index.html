@@ -42,15 +42,8 @@
         <div id="game-page" class="hidden">
             <div class="bg-gray-800/50 backdrop-blur-sm p-6 md:p-8 rounded-2xl shadow-2xl border border-gray-700">
                 <h1 id="location-text" class="text-xl md:text-2xl font-bold text-center text-blue-300 mb-6"></h1>
-                <div id="rotator-grid" class="grid grid-cols-2 gap-4 md:gap-6 mb-8">
-                    <!-- JS 填充 -->
-                </div>
+                <div id="rotator-grid" class="grid grid-cols-2 gap-4 md:gap-6 mb-8"></div>
                 <div class="flex flex-col md:flex-row gap-4">
-                    <!-- 
-                        *** 关键更改 ***
-                        - 默认文本改为 "开始"
-                        - 默认颜色改为 绿色 (bg-green-600)
-                    -->
                     <button id="toggle-pause-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-lg">
                         开始
                     </button>
@@ -66,7 +59,7 @@
             </div>
         </div>
 
-        <!-- 设置页面 (保持不变) -->
+        <!-- 设置页面 -->
         <div id="settings-page" class="hidden">
             <div class="bg-gray-800 p-6 md:p-8 rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-[90vh] md:h-auto md:max-h-[90vh]">
                 <!-- 1. 页头 (固定) -->
@@ -74,6 +67,7 @@
                     <h2 class="text-2xl font-bold text-white">设置</h2>
                     <button id="back-btn" class="text-gray-400 hover:text-white transition duration-200 text-3xl leading-none">&times;</button>
                 </div>
+
                 <!-- 2. 表单内容 (可滚动) -->
                 <div class="flex-grow overflow-y-auto space-y-6 pr-2 settings-form-container">
                     <!-- 地点编辑 -->
@@ -102,10 +96,15 @@
                         <textarea id="setting-pool" rows="10" class="w-full bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                     </div>
                 </div>
-                <!-- 3. 保存按钮 (固定在底部) -->
-                <div class="mt-6 flex-shrink-0">
+
+                <!-- 3. 操作按钮 (固定在底部) -->
+                <!-- 新增: space-y-3, 新增 reset-default-btn -->
+                <div class="mt-6 flex-shrink-0 space-y-3">
                     <button id="save-settings-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-lg">
                         保存设置
+                    </button>
+                    <button id="reset-default-btn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                        恢复默认设置
                     </button>
                 </div>
             </div>
@@ -160,9 +159,6 @@
 
         // --- 应用状态 ---
         let settings = { ...defaultSettings };
-        // *** 关键更改 ***
-        // isRunning 默认为 false, intervalId 默认为 null.
-        // 我们不再在页面加载时自动将 isRunning 设为 true.
         let isRunning = false;
         let intervalId = null;
         let lastRotatorValues = {};
@@ -176,10 +172,13 @@
             settingsRotatorsContainer, settingPoolTextarea,
             settingSpeedSlider, settingSpeedValueDisplay;
         let confirmationModal, modalCloseBtn, modalSaveBtn, modalDiscardBtn, toastNotification;
+        
+        // 新增: 重置按钮
+        let resetDefaultButton;
 
         // --- 数据加载 (localStorage) ---
         function loadSettings() {
-            // (此函数保持不变, 它的逻辑是正确的)
+            // (此函数保持不变)
             settings = { ...defaultSettings };
             try {
                 const savedSettings = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -235,80 +234,59 @@
             });
         }
 
-        // --- 游戏逻辑 ---
+        // --- 游戏逻辑 (保持不变) ---
         function startGame() {
-            if (isRunning) return; // 防止重复启动
+            if (isRunning) return;
             isRunning = true;
             togglePauseButton.textContent = '暂停';
             togglePauseButton.classList.remove('bg-green-600', 'hover:bg-green-700');
             togglePauseButton.classList.add('bg-red-600', 'hover:bg-red-700');
             
-            // (保持所有的防御性检查, 它们是健壮的)
             let currentSpeed = parseInt(settings.speed, 10) || defaultSettings.speed;
             if (currentSpeed < 15 || currentSpeed > 60) {
                 currentSpeed = defaultSettings.speed;
             }
             let intervalInMs = 1000 / currentSpeed;
             if (isNaN(intervalInMs) || !isFinite(intervalInMs)) {
-                console.error(`无效的速度值: ${settings.speed}, 强制重置为 30/秒`);
                 intervalInMs = 1000 / defaultSettings.speed;
             }
             
             if (intervalId) clearInterval(intervalId);
-            console.log(`游戏开始, 速度: ${currentSpeed}/秒, 间隔: ${intervalInMs}ms`);
             intervalId = setInterval(updateRotators, intervalInMs); 
         }
 
         function stopGame() {
-            // *** 关键更改 ***
-            // 即使 isRunning 已经是 false (比如在初始加载时), 
-            // 我们仍然要确保按钮的文本和样式被设置为 "已暂停" 状态。
-            
-            isRunning = false; // 确保状态为 false
+            isRunning = false;
             if (intervalId) {
                 clearInterval(intervalId);
                 intervalId = null;
             }
-            
-            // 确保按钮在调用时更新到“已暂停”状态
             if (togglePauseButton) {
-                togglePauseButton.textContent = '开始'; // 初始文本设为 "开始"
+                togglePauseButton.textContent = '开始';
                 togglePauseButton.classList.remove('bg-red-600', 'hover:bg-red-700');
                 togglePauseButton.classList.add('bg-green-600', 'hover:bg-green-700');
             }
         }
         
-        // 在 `stopGame` 中，我们把 "已暂停 (点此继续)" 改为 "开始"，
-        // 这样在 `togglePause` 中就可以保持逻辑不变。
         function togglePause() {
             if (isRunning) {
                 stopGame();
-                // 在手动停止时，才将文本设为 "已暂停"
                 togglePauseButton.textContent = '已暂停 (点此继续)'; 
             } else {
                 startGame();
             }
         }
 
-
         function resetGame() {
-            // *** 关键更改 ***
-            // 重新开始时，我们不再自动启动
-            // 而是停止游戏并重置UI，让用户点击“开始”
-            if (isRunning) {
-                stopGame();
-            }
+            if (isRunning) stopGame();
             lastRotatorValues = {};
-            populateUI(); // 重置显示为 "---"
-            
-            // 确保按钮回到 "开始" 状态
+            populateUI();
             togglePauseButton.textContent = '开始';
             togglePauseButton.classList.remove('bg-red-600', 'hover:bg-red-700');
             togglePauseButton.classList.add('bg-green-600', 'hover:bg-green-700');
         }
 
         function updateRotators() {
-            // (此函数保持不变)
             settings.rotators.forEach(rotator => {
                 const el = document.getElementById(`rotator-value-${rotator.id}`);
                 if (el) el.textContent = getRandomFromPool(rotator.id);
@@ -316,7 +294,6 @@
         }
 
         function getRandomFromPool(rotatorId) {
-            // (此函数保持不变)
             const pool = settings.pool;
             if (!pool || pool.length === 0) return '???';
             if (pool.length === 1) return pool[0];
@@ -359,8 +336,9 @@
             }, 3000);
         }
 
-        // --- 设置页面逻辑 (保持不变) ---
+        // --- 设置页面逻辑 ---
         function addRotatorField(value = '', markAsChange = true) {
+            // (此函数保持不变)
             const fieldEl = document.createElement('div');
             fieldEl.className = "flex items-center space-x-2 w-full";
             fieldEl.innerHTML = `
@@ -380,17 +358,13 @@
 
         // 保存设置到 localStorage
         function saveSettings() {
+            // (此函数保持不变)
             loader.classList.remove('hidden');
             gamePage.classList.add('hidden');
             settingsPage.classList.add('hidden');
 
-            // *** 关键更改 ***
-            // 保存后不再自动启动，而是重置到“开始”状态
-            if (isRunning) {
-                stopGame(); // 确保停止
-            }
+            if (isRunning) stopGame();
 
-            // (...收集新设置的代码保持不变...)
             const newLocationText = settingLocationInput.value;
             const newSpeed = parseInt(settingSpeedSlider.value, 10); 
             const newPool = settingPoolTextarea.value.split('\n').map(s => s.trim()).filter(Boolean);
@@ -420,12 +394,33 @@
                 showToast("保存失败!", true);
             } finally {
                 loader.classList.add('hidden');
-                
-                // *** 关键更改 ***
-                // 确保游戏在保存后回到 "已暂停" 状态
                 stopGame(); 
             }
         }
+        
+        /**
+         * 新增: 将设置表单中的所有字段重置为
+         * 应用程序的默认值。
+         * 这不会自动保存，用户仍需点击 "保存"。
+         */
+        function resetFormToDefault() {
+            console.log("重置表单为默认值...");
+            
+            // 1. 将一个 *新的* 默认设置对象复制到全局设置变量中
+            //    (我们用它来填充表单, 它不是已保存的状态)
+            //    我们必须使用 structuredClone 来深度复制, 以防 pool 数组被引用
+            settings = structuredClone(defaultSettings);
+            
+            // 2. 重新填充表单以在UI上显示默认值
+            populateSettingsForm();
+            
+            // 3. 标记为“已更改”，以便“保存”按钮或“丢弃”逻辑能正常工作
+            settingsHaveChanged = true;
+            
+            // 4. 通知用户
+            showToast("已重置为默认值，请点击保存");
+        }
+
 
         // --- DOM 加载后执行 ---
         window.addEventListener('DOMContentLoaded', () => {
@@ -451,6 +446,9 @@
             modalSaveBtn = document.getElementById('modal-save-btn');
             modalDiscardBtn = document.getElementById('modal-discard-btn');
             toastNotification = document.getElementById('toast-notification');
+            
+            // 新增: 获取重置按钮
+            resetDefaultButton = document.getElementById('reset-default-btn');
 
             // (绑定事件监听...)
             togglePauseButton.addEventListener('click', togglePause);
@@ -458,6 +456,10 @@
             settingsButton.addEventListener('click', showSettings);
             saveSettingsButton.addEventListener('click', saveSettings);
             addRotatorButton.addEventListener('click', () => addRotatorField());
+            
+            // 新增: 绑定重置按钮
+            resetDefaultButton.addEventListener('click', resetFormToDefault);
+            
             backButton.addEventListener('click', () => {
                 if (settingsHaveChanged) {
                     confirmationModal.classList.remove('hidden');
@@ -466,12 +468,20 @@
                 }
             });
             modalCloseBtn.addEventListener('click', () => confirmationModal.classList.add('hidden'));
+            
+            // *** 关键修复: "丢弃" 逻辑 ***
             modalDiscardBtn.addEventListener('click', () => {
                 confirmationModal.classList.add('hidden');
                 showGame();
+                
+                // 1. 重新从 localStorage 加载上次保存的设置, 覆盖内存中的更改
+                loadSettings(); 
+                // 2. 用刚加载的 (未更改的) 设置重新填充表单
                 populateSettingsForm(); 
+                
                 showToast("修改已丢弃");
             });
+            
             modalSaveBtn.addEventListener('click', () => {
                 confirmationModal.classList.add('hidden');
                 saveSettings();
@@ -483,7 +493,7 @@
                 settingsHaveChanged = true;
             });
             
-            // --- 初始化流程 ---
+            // --- 初始化流程 (保持不变) ---
             loadSettings();
             populateUI();
             populateSettingsForm();
@@ -491,11 +501,10 @@
             loader.classList.add('hidden');
             gamePage.classList.remove('hidden');
             
-            // *** 关键更改 ***
-            // 移除了 startGame()
-            // 相反, 确保应用在 "已暂停" 状态下启动
-            stopGame(); 
+            stopGame(); // 确保在 "已暂停" 状态下启动
         });
     </script>
 </body>
 </html>
+
+
