@@ -1,7 +1,8 @@
 // js/storage.js
 // 专门处理 localStorage 的读取、写入和迁移
 
-import { V1_STORAGE_KEY, V2_STORAGE_KEY, defaultOverwatchTemplate, defaultOverwatchPool, defaultCOCTemplate } from './config.js';
+import { V1_STORAGE_KEY, V2_STORAGE_KEY } from './config.js';
+import { allDefaultTemplates, defaultOverwatchTemplate, defaultOverwatchPool } from './defaultTemplates.js';
 import { showToast } from './ui.js';
 
 // 初始化应用数据
@@ -24,15 +25,21 @@ export function initializeApp() {
         appData = migrateV1Data();
     }
     
-    // 确保至少有默认模板
-    if (!appData.templates.find(t => t.id === defaultOverwatchTemplate.id)) {
-        appData.templates.unshift(structuredClone(defaultOverwatchTemplate));
-        saveAppData(appData);
+    // 确保所有默认模板都存在
+    let templatesAdded = false;
+    for (const defaultTemplate of allDefaultTemplates) {
+        if (!appData.templates.find(t => t.id === defaultTemplate.id)) {
+            // 将守望先锋（第一个）放在最前面，其他的放在末尾
+            if (defaultTemplate.id === allDefaultTemplates[0].id) {
+                appData.templates.unshift(structuredClone(defaultTemplate));
+            } else {
+                appData.templates.push(structuredClone(defaultTemplate));
+            }
+            templatesAdded = true;
+        }
     }
     
-    // 新增：确保 COC 模板存在
-    if (!appData.templates.find(t => t.id === defaultCOCTemplate.id)) {
-        appData.templates.push(structuredClone(defaultCOCTemplate)); // push 到末尾
+    if (templatesAdded) {
         saveAppData(appData);
     }
     
@@ -100,4 +107,3 @@ export function saveAppData(appData) {
         showToast("保存失败!", true);
     }
 }
-

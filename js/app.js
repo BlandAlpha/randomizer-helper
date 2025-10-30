@@ -2,7 +2,8 @@
 // 主控制器，管理状态、导入模块、绑定事件
 
 import * as dom from './dom.js';
-import * as config from './config.js';
+import * as config from './config.js'; // 只导入 config.js 中的 KEYS
+import { allDefaultTemplates } from './defaultTemplates.js'; // 导入模板
 import * as storage from './storage.js';
 import * as ui from './ui.js';
 import * as game from './game.js';
@@ -237,10 +238,11 @@ function handleDeleteTemplate(templateId, from) {
     modalConfirmCallback = () => {
         appData.templates = appData.templates.filter(t => t.id !== templateId);
         if (appData.activeTemplateId === templateId) {
-            appData.activeTemplateId = config.defaultOverwatchTemplate.id;
+            // 回退到第一个默认模板 (通常是守望先锋)
+            const primaryDefaultId = allDefaultTemplates[0]?.id || null;
+            appData.activeTemplateId = primaryDefaultId;
         }
         
-        // --- FIX: 从这里开始的代码在您提供的版本中丢失了 ---
         storage.saveAppData(appData);
         
         ui.hideModal();

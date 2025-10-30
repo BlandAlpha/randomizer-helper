@@ -19,7 +19,15 @@ export function renderHomePage(templates, eventHandlers) {
     
     templates.forEach(template => {
         const card = document.createElement('div');
-        card.className = "template-card-clickable bg-gray-700 p-4 rounded-lg flex flex-col md:flex-row items-center justify-between gap-3 cursor-pointer hover:bg-gray-600 transition-colors";
+
+        // 样式区分
+        const isDefault = template.isDefault;
+        const baseClasses = "template-card-clickable p-4 rounded-lg flex flex-col md:flex-row items-center justify-between gap-3 cursor-pointer transition-colors";
+        const styleClasses = isDefault 
+            ? 'bg-gray-800 border border-gray-700 hover:bg-gray-700' // 默认模板
+            : 'bg-gray-700 hover:bg-gray-600'; // 自定义模板
+            
+        card.className = `${baseClasses} ${styleClasses}`;
         card.dataset.id = template.id;
         
         let buttonsHTML = '';
