@@ -346,6 +346,7 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // 主页
     dom.createNewTemplateBtn.addEventListener('click', createNewTemplate);
+    dom.emptyStatePlaceholder.addEventListener('click', createNewTemplate);
     
     // 游戏页
     dom.togglePauseButton.addEventListener('click', game.togglePause);

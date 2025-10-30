@@ -18,11 +18,8 @@ export function renderHomePage(templates, eventHandlers) {
     dom.defaultTemplateList.innerHTML = '';
     dom.customTemplateList.innerHTML = '';
 
-    if (customTemplates.length > 0) {
-        dom.customTemplatesSection.classList.remove('hidden');
-    } else {
-        dom.customTemplatesSection.classList.add('hidden');
-    }
+    // "我的项目" 标题始终可见
+    dom.customTemplatesSection.classList.remove('hidden');
 
     const createCardHTML = (template) => {
         const isDefault = template.isDefault;
@@ -68,13 +65,22 @@ export function renderHomePage(templates, eventHandlers) {
         `;
     };
 
+    // 渲染默认模板
     defaultTemplates.forEach(template => {
         dom.defaultTemplateList.innerHTML += createCardHTML(template);
     });
 
-    customTemplates.forEach(template => {
-        dom.customTemplateList.innerHTML += createCardHTML(template);
-    });
+    // 根据是否有自定义项目，显示列表或占位符
+    if (customTemplates.length > 0) {
+        dom.customTemplateList.classList.remove('hidden');
+        dom.emptyStatePlaceholder.classList.add('hidden');
+        customTemplates.forEach(template => {
+            dom.customTemplateList.innerHTML += createCardHTML(template);
+        });
+    } else {
+        dom.customTemplateList.classList.add('hidden');
+        dom.emptyStatePlaceholder.classList.remove('hidden');
+    }
     
     // --- 统一绑定事件 ---
     const allCards = document.querySelectorAll('.template-card-clickable');

@@ -12,6 +12,7 @@ export const defaultTemplatesSection = document.getElementById('default-template
 export const customTemplatesSection = document.getElementById('custom-templates-section');
 export const defaultTemplateList = document.getElementById('default-template-list');
 export const customTemplateList = document.getElementById('custom-template-list');
+export const emptyStatePlaceholder = document.getElementById('empty-state-placeholder');
 
 // 游戏页
 export const homeBtn = document.getElementById('home-btn');
