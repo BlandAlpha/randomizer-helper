@@ -116,7 +116,6 @@ export function populateSettingsForm(template, onAddRotatorField) {
     dom.settingTemplateNameInput.disabled = isEditingDisabled;
     dom.settingLocationInput.disabled = isEditingDisabled;
     dom.settingPoolTextarea.disabled = isEditingDisabled;
-    dom.settingSpeedSlider.disabled = isEditingDisabled;
     dom.addRotatorButton.disabled = isEditingDisabled;
     
     // 隐藏或显示整个操作区域
@@ -144,7 +143,7 @@ export function addRotatorField(rotator, showPoolButton, onFieldChanged, onField
     `;
 
     fieldEl.innerHTML = `
-        <input type="text" value="${rotator.label}" class="flex-grow bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 min-w-0" placeholder="轮换位名称 (如: 敌人是)">
+        <input type="text" id="rotator-label-${rotator.id}" name="rotator-label-${rotator.id}" value="${rotator.label}" class="flex-grow bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 min-w-0" placeholder="轮换位名称 (如: 敌人是)">
         <div class="flex-shrink-0 flex items-center gap-2">
             <button class="edit-individual-pool-btn ${showPoolButton ? '' : 'hidden'} bg-yellow-600 hover:bg-yellow-700 text-white font-bold p-2 rounded-lg text-sm h-10">编辑池</button>
             <button class="remove-rotator-btn bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-lg h-10 w-10 flex items-center justify-center">
@@ -337,19 +336,14 @@ export function hideIndividualPoolModal() {
  * @param {'home' | 'game' | 'settings'} pageName - 要显示的页面
  */
 export function showPage(pageName) {
-    dom.homePage.classList.add('hidden');
-    dom.gamePage.classList.add('hidden');
-    dom.settingsPage.classList.add('hidden');
+    const pages = [dom.homePage, dom.gamePage, dom.settingsPage];
+    const targetPageId = `${pageName}-page`;
 
-    switch (pageName) {
-        case 'home':
-            dom.homePage.classList.remove('hidden');
-            break;
-        case 'game':
-            dom.gamePage.classList.remove('hidden');
-            break;
-        case 'settings':
-            dom.settingsPage.classList.remove('hidden');
-            break;
-    }
+    pages.forEach(page => {
+        if (page.id === targetPageId) {
+            page.classList.remove('hidden');
+        } else {
+            page.classList.add('hidden');
+        }
+    });
 }

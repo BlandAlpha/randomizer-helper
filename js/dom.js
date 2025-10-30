@@ -16,6 +16,7 @@ export const rotatorGridEl = document.getElementById('rotator-grid');
 export const togglePauseButton = document.getElementById('toggle-pause-btn');
 export const restartButton = document.getElementById('restart-btn');
 export const settingsButton = document.getElementById('settings-btn');
+export const settingsBtnContainer = document.getElementById('settings-btn-container');
 export const homeBtn = document.getElementById('home-btn');
 
 // 设置页面

@@ -62,7 +62,11 @@ function loadTemplate(templateId) {
     game.resetGame(() => ui.populateUI(currentSettings));
     
     // 根据是否为默认模板，显示或隐藏设置按钮
-    dom.settingsButton.style.display = template.isDefault ? 'none' : 'block';
+    if (template.isDefault) {
+        dom.settingsBtnContainer.classList.add('hidden');
+    } else {
+        dom.settingsBtnContainer.classList.remove('hidden');
+    }
     
     showGame();
 }
