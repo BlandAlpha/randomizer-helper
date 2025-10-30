@@ -38,9 +38,9 @@ export function renderHomePage(templates, eventHandlers) {
         `;
 
         card.innerHTML = `
-            <div class="flex-grow text-center md:text-left pointer-events-none">
-                <span class="font-bold text-lg text-white">${template.name}</span>
-                ${template.isDefault ? '<span class="ml-2 text-xs bg-gray-500 text-gray-200 py-0.5 px-2 rounded-full">默认</span>' : ''}
+            <div class="flex-grow flex items-center overflow-hidden mr-2 pointer-events-none">
+                <span class="font-bold text-lg text-white truncate" title="${template.name}">${template.name}</span>
+                ${template.isDefault ? '<span class="ml-2 text-xs bg-gray-500 text-gray-200 py-0.5 px-2 rounded-full flex-shrink-0">默认</span>' : ''}
             </div>
             <div class="flex-shrink-0">
                 ${optionsButtonHTML}
