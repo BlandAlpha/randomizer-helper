@@ -245,26 +245,8 @@ function saveSettings() {
     settingsHaveChanged = false;
     
     ui.populateUI(currentSettings); // 使用新保存的设置更新UI
+    showGame(); // 返回游戏页面
     ui.showToast("设置已保存");
-}
-
-// 重置模板(恢复到上次保存)
-function handleResetTemplate() {
-    modalConfirmCallback = () => {
-        const template = appData.templates.find(t => t.id === appData.activeTemplateId);
-        if (template) {
-            editTemplate(template.id); // 这会重新加载并填充表单
-            ui.showToast("已重置为上次保存的状态");
-        }
-        ui.hideModal();
-    };
-    
-    ui.showConfirmationModal(
-        "重置模板",
-        "你确定要丢弃所有未保存的更改, 恢复到上次保存的状态吗？",
-        "confirm-cancel",
-        modalConfirmCallback
-    );
 }
 
 // 删除模板
@@ -387,7 +369,6 @@ window.addEventListener('DOMContentLoaded', () => {
     // 设置页
     dom.saveSettingsButton.addEventListener('click', saveSettings);
     dom.addRotatorButton.addEventListener('click', () => handleAddRotatorField(undefined, true));
-    dom.resetTemplateBtn.addEventListener('click', handleResetTemplate);
     dom.deleteTemplateBtn.addEventListener('click', () => handleDeleteTemplate(appData.activeTemplateId, 'settings'));
 
     // 新增: "共享轮换池" 开关

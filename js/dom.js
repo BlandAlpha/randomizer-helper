@@ -28,7 +28,6 @@ export const addRotatorButton = document.getElementById('add-rotator-btn');
 export const settingLocationInput = document.getElementById('setting-location');
 export const settingsRotatorsContainer = document.getElementById('settings-rotators-container');
 export const settingPoolTextarea = document.getElementById('setting-pool');
-export const resetTemplateBtn = document.getElementById('reset-template-btn');
 export const deleteTemplateBtn = document.getElementById('delete-template-btn');
 export const settingSharePoolToggle = document.getElementById('setting-share-pool');
 export const sharedPoolContainer = document.getElementById('shared-pool-container');
