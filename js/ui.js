@@ -137,16 +137,27 @@ export function populateSettingsForm(template, onAddRotatorField) {
  */
 export function addRotatorField(rotator, showPoolButton, onFieldChanged, onFieldRemoved, onEditPool) {
     const fieldEl = document.createElement('div');
-    fieldEl.className = "flex items-center space-x-2 w-full";
+    fieldEl.className = "flex items-center gap-2 w-full";
+    
+    const deleteIconSVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+    `;
+
     fieldEl.innerHTML = `
-        <input type="text" value="${rotator.label}" class="flex-grow bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="轮换位名称 (如: 敌人是)">
-        <button class="edit-individual-pool-btn ${showPoolButton ? '' : 'hidden'} bg-yellow-600 hover:bg-yellow-700 text-white font-bold p-2 rounded-lg text-sm">编辑池</button>
-        <button class="remove-rotator-btn bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-lg w-10">-</button>
+        <input type="text" value="${rotator.label}" class="flex-grow bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 min-w-0" placeholder="轮换位名称 (如: 敌人是)">
+        <div class="flex-shrink-0 flex items-center gap-2">
+            <button class="edit-individual-pool-btn ${showPoolButton ? '' : 'hidden'} bg-yellow-600 hover:bg-yellow-700 text-white font-bold p-2 rounded-lg text-sm h-10">编辑池</button>
+            <button class="remove-rotator-btn bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-lg h-10 w-10 flex items-center justify-center">
+                ${deleteIconSVG}
+            </button>
+        </div>
     `;
     dom.settingsRotatorsContainer.appendChild(fieldEl);
     
     fieldEl.querySelector('.remove-rotator-btn').addEventListener('click', (e) => {
-        if (e.target.disabled) return;
+        if (e.currentTarget.disabled) return;
         fieldEl.remove();
         onFieldRemoved(rotator); // 传递 rotator 对象
     });
@@ -157,7 +168,7 @@ export function addRotatorField(rotator, showPoolButton, onFieldChanged, onField
     // 绑定新按钮
     fieldEl.querySelector('.edit-individual-pool-btn').addEventListener('click', (e) => {
         e.stopPropagation(); 
-        if (e.target.disabled) return;
+        if (e.currentTarget.disabled) return;
         onEditPool(rotator);
     });
 }
@@ -271,13 +282,23 @@ export function showContextMenu(x, y, template) {
         `;
     }
     dom.contextMenu.innerHTML = menuItemsHTML;
-
-    // 定位 (对齐右下角)
-    const menuWidth = dom.contextMenu.offsetWidth;
-    dom.contextMenu.style.left = `${x - menuWidth}px`;
-    dom.contextMenu.style.top = `${y + 5}px`;
     
+    // 必须先显示才能获取尺寸
     dom.contextMenu.classList.remove('hidden');
+
+    // 定位 (智能判断)
+    const menuWidth = dom.contextMenu.offsetWidth;
+    const menuHeight = dom.contextMenu.offsetHeight;
+    const viewportHeight = window.innerHeight;
+
+    let top = y + 5; // 默认在下方
+    // 如果下方空间不足，则放到上方
+    if (y + menuHeight + 10 > viewportHeight) {
+        top = y - menuHeight - 30; // 30是按钮高度的近似值
+    }
+
+    dom.contextMenu.style.left = `${x - menuWidth}px`;
+    dom.contextMenu.style.top = `${top}px`;
 }
 
 /**

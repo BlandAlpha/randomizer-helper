@@ -48,6 +48,7 @@ input[type=range] {
     -webkit-appearance: none; 
     width: 100%; 
     margin: 6px 0; 
+    background: transparent;
 }
 input[type=range]:focus { 
     outline: none; 
@@ -90,6 +91,17 @@ input[type=range]::-moz-range-thumb {
 input[type=range]:hover::-moz-range-thumb { 
     background: #2563eb; 
 }
+
+/* 修复: 移除滑块在某些浏览器上的默认背景 */
+input[type=range]::-webkit-slider-thumb {
+    border: none;
+    background-color: #3b82f6; /* 确保背景色被应用 */
+}
+input[type=range]::-moz-range-thumb {
+    border: none;
+    background-color: #3b82f6; /* 确保背景色被应用 */
+}
+
 
 /* 切换开关 */
 .switch { 
