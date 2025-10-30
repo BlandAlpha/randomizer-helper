@@ -15,79 +15,76 @@ export function renderHomePage(templates, eventHandlers) {
     const defaultTemplates = templates.filter(t => t.isDefault);
     const customTemplates = templates.filter(t => !t.isDefault);
 
-    dom.defaultTemplateList.innerHTML = '';
-    dom.customTemplateList.innerHTML = '';
+    // --- 1. 渲染默认模板 (新: 横向大卡片) ---
+    const defaultList = dom.defaultTemplateList;
+    defaultList.innerHTML = '';
+    // 更新容器样式以支持横向滚动, 增加 py-4 px-2 内边距为缩放提供空间
+    defaultList.className = 'flex overflow-x-auto space-x-4 py-4 px-2 hide-scrollbar';
 
-    // "我的项目" 标题始终可见
-    dom.customTemplatesSection.classList.remove('hidden');
-
-    const createCardHTML = (template) => {
-        const isDefault = template.isDefault;
-        const baseClasses = "template-card-clickable p-4 rounded-lg flex items-center justify-between gap-3 cursor-pointer transition-colors";
-        const styleClasses = isDefault 
-            ? 'bg-gray-800 border border-gray-700 hover:bg-gray-700'
-            : 'bg-gray-700 hover:bg-gray-600';
-
-        const nameHTML = `
-            <div class="flex-grow flex items-center overflow-hidden mr-2 pointer-events-none">
-                <span class="font-bold text-lg text-white truncate" title="${template.name}">${template.name}</span>
-            </div>
-        `;
-
-        const mobileMenuHTML = `
-            <div class="flex md:hidden flex-shrink-0">
-                <button aria-label="选项" data-id="${template.id}" class="options-btn p-2 rounded-full hover:bg-gray-500 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                    </svg>
-                </button>
-            </div>
-        `;
-
-        let desktopButtonsHTML = '';
-        if (isDefault) {
-            desktopButtonsHTML = `<button data-id="${template.id}" class="duplicate-template-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm">复制</button>`;
-        } else {
-            desktopButtonsHTML = `
-                <button data-id="${template.id}" class="duplicate-template-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm">复制</button>
-                <button data-id="${template.id}" class="delete-template-btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm">删除</button>
-            `;
-        }
-        
-        return `
-            <div data-id="${template.id}" class="${baseClasses} ${styleClasses}">
-                ${nameHTML}
-                <div class="hidden md:flex flex-shrink-0 items-center gap-3">
-                    ${desktopButtonsHTML}
-                </div>
-                ${mobileMenuHTML}
-            </div>
-        `;
+    const templateMetadata = {
+        'default-ow-uuid': { color: 'from-cyan-400 to-blue-600', logo: 'overwatch.png' },
+        'default-arknights-uuid': { color: 'from-slate-800 to-gray-900', logo: 'arknights.png' },
+        'default-coc-uuid': { color: 'from-emerald-800 to-teal-900', logo: 'coc.png' },
+        'default-superpower-uuid': { color: 'from-purple-800 to-violet-900', logo: null },
     };
 
-    // 渲染默认模板
+    const copyIconSVG = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
+            <path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h6a2 2 0 00-2-2H5z" />
+        </svg>
+    `;
+
     defaultTemplates.forEach(template => {
-        dom.defaultTemplateList.innerHTML += createCardHTML(template);
+        const metadata = templateMetadata[template.id] || { color: 'from-gray-800 to-gray-900', logo: null };
+        const logoDiv = metadata.logo 
+            ? `<div class="absolute inset-0 bg-no-repeat bg-center opacity-20" style="background-image: url('imgs/${metadata.logo}'); background-size: 80%;"></div>` 
+            : '';
+
+        const cardHTML = `
+            <div data-id="${template.id}" class="template-card-clickable flex-shrink-0 w-60 h-36 md:w-72 md:h-40 rounded-xl cursor-pointer transition-transform hover:scale-105 overflow-hidden">
+                <div class="relative w-full h-full p-4 flex flex-col justify-end bg-gradient-to-br ${metadata.color}">
+                    ${logoDiv}
+                    <h3 class="relative text-white text-xl font-bold z-10 select-none">${template.name}</h3>
+                    <button data-id="${template.id}" aria-label="复制模板" class="duplicate-template-btn absolute top-3 right-3 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors z-10">
+                        ${copyIconSVG}
+                    </button>
+                </div>
+            </div>
+        `;
+        defaultList.innerHTML += cardHTML;
     });
+
+    // --- 2. 渲染我的项目 (旧: 垂直列表) ---
+    dom.customTemplateList.innerHTML = '';
+    dom.customTemplatesSection.classList.remove('hidden');
 
     // 根据是否有自定义项目，显示列表或占位符
     if (customTemplates.length > 0) {
         dom.customTemplateList.classList.remove('hidden');
         dom.emptyStatePlaceholder.classList.add('hidden');
         customTemplates.forEach(template => {
-            dom.customTemplateList.innerHTML += createCardHTML(template);
+            dom.customTemplateList.innerHTML += createCustomProjectCardHTML(template);
         });
     } else {
         dom.customTemplateList.classList.add('hidden');
         dom.emptyStatePlaceholder.classList.remove('hidden');
     }
     
-    // --- 统一绑定事件 ---
+    // --- 3. 统一绑定事件 ---
     const allCards = document.querySelectorAll('.template-card-clickable');
     
     allCards.forEach(card => {
         // 点击卡片本身 (非按钮区域)
         card.addEventListener('click', (e) => {
+            // 新增: 如果卡片的父容器 (滚动条) 被标记为拖拽过, 则阻止点击事件
+            const slider = e.currentTarget.parentElement;
+            if (slider && slider.getAttribute('data-was-dragged') === 'true') {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+
             if (e.target.closest('button')) return; 
             eventHandlers.onStart(e.currentTarget.dataset.id);
         });
@@ -113,6 +110,47 @@ export function renderHomePage(templates, eventHandlers) {
             showContextMenu(rect.right, rect.bottom, template);
         }));
     });
+}
+
+/**
+ * 为自定义项目创建卡片HTML (之前的 createCardHTML)
+ * @param {Object} template - 项目对象
+ * @returns {string} - HTML 字符串
+ */
+function createCustomProjectCardHTML(template) {
+    const baseClasses = "template-card-clickable p-4 rounded-lg flex items-center justify-between gap-3 cursor-pointer transition-colors";
+    const styleClasses = 'bg-gray-700 hover:bg-gray-600';
+
+    const nameHTML = `
+        <div class="flex-grow flex items-center overflow-hidden mr-2 pointer-events-none">
+            <span class="font-bold text-lg text-white truncate" title="${template.name}">${template.name}</span>
+        </div>
+    `;
+
+    const mobileMenuHTML = `
+        <div class="flex md:hidden flex-shrink-0">
+            <button aria-label="选项" data-id="${template.id}" class="options-btn p-2 rounded-full hover:bg-gray-500 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+            </button>
+        </div>
+    `;
+
+    const desktopButtonsHTML = `
+        <button data-id="${template.id}" class="duplicate-template-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm">复制</button>
+        <button data-id="${template.id}" class="delete-template-btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm">删除</button>
+    `;
+    
+    return `
+        <div data-id="${template.id}" class="${baseClasses} ${styleClasses}">
+            ${nameHTML}
+            <div class="hidden md:flex flex-shrink-0 items-center gap-3">
+                ${desktopButtonsHTML}
+            </div>
+            ${mobileMenuHTML}
+        </div>
+    `;
 }
 
 /**

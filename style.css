@@ -166,3 +166,17 @@ input:disabled + .slider:before {
     color: white;
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
+
+/* 新增: 隐藏滚动条 */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    cursor: grab;
+    user-select: none;
+}
+.hide-scrollbar.active {
+    cursor: grabbing;
+}

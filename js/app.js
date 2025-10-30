@@ -501,4 +501,123 @@ window.addEventListener('DOMContentLoaded', () => {
     dom.settingTemplateNameInput.addEventListener('input', markChanged);
     dom.settingLocationInput.addEventListener('input', markChanged);
     dom.settingPoolTextarea.addEventListener('input', markChanged);
-}); // FIX: 缺少此 '});' 来关闭 DOMContentLoaded
+
+    // --- 新增: 横向滚动功能 ---
+    const slider = dom.defaultTemplateList;
+    if (slider) {
+        // 1. 滚轮横向滚动
+        slider.addEventListener('wheel', (e) => {
+            // 如果没有横向滚动条，则不执行任何操作
+            if (slider.scrollWidth <= slider.clientWidth) return;
+            e.preventDefault();
+            slider.scrollLeft += e.deltaY;
+        });
+
+        // 2. 拖拽横向滚动 (含惯性和边缘弹性)
+        let isDown = false;
+        let isDragging = false;
+        let startX;
+        let scrollLeft;
+        let velocity = 0;
+        let rafId;
+        let lastX;
+
+        const startDrag = (e) => {
+            isDown = true;
+            isDragging = false;
+            slider.classList.add('active');
+            const pageX = e.pageX ?? e.touches[0].pageX;
+            startX = pageX - slider.offsetLeft;
+            scrollLeft = slider.scrollLeft;
+            velocity = 0;
+            lastX = pageX;
+            cancelAnimationFrame(rafId);
+        };
+
+        const onDrag = (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const pageX = e.pageX ?? e.touches[0].pageX;
+            const x = pageX - slider.offsetLeft;
+            const walk = x - startX;
+
+            if (Math.abs(walk) > 5) { // 拖拽阈值
+                isDragging = true;
+            }
+
+            // 计算速度
+            const deltaX = pageX - lastX;
+            velocity = deltaX * 1.5; // 速度放大系数
+            lastX = pageX;
+
+            // 边缘弹性拖拽
+            const maxScrollLeft = slider.scrollWidth - slider.clientWidth;
+            let newScrollLeft = scrollLeft - walk;
+            
+            if (newScrollLeft < 0) {
+                const overscroll = -newScrollLeft;
+                newScrollLeft = -(overscroll ** 0.85); // 边缘阻力
+            } else if (newScrollLeft > maxScrollLeft) {
+                const overscroll = newScrollLeft - maxScrollLeft;
+                newScrollLeft = maxScrollLeft + (overscroll ** 0.85);
+            }
+            slider.scrollLeft = newScrollLeft;
+        };
+
+        const stopDrag = () => {
+            if (!isDown) return;
+            isDown = false;
+            slider.classList.remove('active');
+
+            if (isDragging) {
+                slider.setAttribute('data-was-dragged', 'true');
+                setTimeout(() => slider.removeAttribute('data-was-dragged'), 0);
+            }
+            
+            rafId = requestAnimationFrame(momentumScroll);
+        };
+
+        const momentumScroll = () => {
+            const friction = 0.95;
+            const springFactor = 0.15;
+            const maxScrollLeft = slider.scrollWidth - slider.clientWidth;
+            let needsAnimation = false;
+
+            // 惯性滚动
+            if (Math.abs(velocity) > 0.5) {
+                slider.scrollLeft -= velocity;
+                velocity *= friction;
+                needsAnimation = true;
+            }
+
+            // 边缘弹性回弹
+            if (slider.scrollLeft < 0) {
+                velocity = 0;
+                slider.scrollLeft += (0 - slider.scrollLeft) * springFactor;
+                if (Math.abs(slider.scrollLeft) < 1) slider.scrollLeft = 0;
+                needsAnimation = true;
+            } else if (slider.scrollLeft > maxScrollLeft) {
+                velocity = 0;
+                slider.scrollLeft += (maxScrollLeft - slider.scrollLeft) * springFactor;
+                if (Math.abs(slider.scrollLeft - maxScrollLeft) < 1) slider.scrollLeft = maxScrollLeft;
+                needsAnimation = true;
+            }
+
+            if (needsAnimation) {
+                rafId = requestAnimationFrame(momentumScroll);
+            } else {
+                cancelAnimationFrame(rafId);
+            }
+        };
+
+        slider.addEventListener('mousedown', startDrag);
+        slider.addEventListener('mousemove', onDrag);
+        slider.addEventListener('mouseup', stopDrag);
+        slider.addEventListener('mouseleave', stopDrag);
+
+        // 移动端触摸支持
+        slider.addEventListener('touchstart', startDrag, { passive: true });
+        slider.addEventListener('touchmove', onDrag, { passive: false });
+        slider.addEventListener('touchend', stopDrag);
+    }
+});
