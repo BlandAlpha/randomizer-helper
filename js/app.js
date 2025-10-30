@@ -121,6 +121,8 @@ function handleDuplicateTemplate(templateId) {
 // 创建新模板
 function createNewTemplate() {
     modalConfirmCallback = (newName) => {
+        const isShared = dom.modalPoolTypeSwitch.checked;
+
         if (!newName || newName.trim() === '') {
             ui.showToast("名称不能为空", true);
             return; // 停在模态框
@@ -130,26 +132,43 @@ function createNewTemplate() {
             id: `custom-${Date.now()}`,
             name: newName,
             isDefault: false,
-            isSharedPool: true, // 默认新模板为共享池
-            config: {
-                locationText: "我的情景",
+            isSharedPool: isShared,
+            config: {}
+        };
+
+        if (isShared) {
+            newTemplate.config = {
+                locationText: "我的共享池情景",
                 speed: 30,
                 sharedPool: ["项目A", "项目B", "项目C"],
                 rotators: [
                     { id: 0, label: "轮换位 1", individualPool: [] }
                 ]
-            }
-        };
+            };
+        } else {
+            newTemplate.config = {
+                locationText: "我的独立池情景",
+                speed: 30,
+                sharedPool: [],
+                rotators: [
+                    { id: 0, label: "分类 A", individualPool: ["选项 1", "选项 2", "选项 3"] },
+                    { id: 1, label: "分类 B", individualPool: ["选项 A", "选项 B", "选项 C"] }
+                ]
+            };
+        }
+
         appData.templates.push(newTemplate);
         storage.saveAppData(appData);
         ui.hideModal();
-        editTemplate(newTemplate.id); // 创建后立即进入编辑
+        
+        // 直接加载模板并进入游戏页面
+        loadTemplate(newTemplate.id); 
     };
     
     ui.showConfirmationModal(
         "创建新模板", 
-        "请输入新模板的名称:", 
-        "prompt", 
+        "请输入新模板的名称并选择类型:", 
+        "create-new", 
         modalConfirmCallback,
         "我的新模板"
     );
@@ -416,7 +435,19 @@ window.addEventListener('DOMContentLoaded', () => {
     
     dom.modalDiscardBtn.addEventListener('click', () => {
         ui.hideModal();
-        showGame(); // 返回游戏页
+        
+        // 修复: 从主数据源重新加载模板以丢弃更改
+        const template = appData.templates.find(t => t.id === appData.activeTemplateId);
+        if (template) {
+            currentSettings = {
+                ...structuredClone(template.config),
+                isSharedPool: template.isSharedPool
+            };
+            // 使用原始的、未更改的数据重新填充游戏UI
+            ui.populateUI(currentSettings);
+        }
+        
+        showGame(); // 返回游戏页面
         settingsHaveChanged = false;
         ui.showToast("修改已丢弃");
     });

@@ -52,6 +52,8 @@ export const modalButtonsConfirmCancel = document.getElementById('modal-buttons-
 export const modalInputContainer = document.getElementById('modal-input-container');
 export const modalInputLabel = document.getElementById('modal-input-label');
 export const modalInput = document.getElementById('modal-input');
+export const modalSwitchContainer = document.getElementById('modal-switch-container');
+export const modalPoolTypeSwitch = document.getElementById('modal-pool-type-switch');
 
 // Toast
 export const toastNotification = document.getElementById('toast-notification');

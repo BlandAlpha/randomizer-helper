@@ -220,6 +220,7 @@ export function showConfirmationModal(title, message, mode, callback = null, pro
     dom.modalButtonsSaveDiscard.classList.add('hidden');
     dom.modalButtonsConfirmCancel.classList.add('hidden');
     dom.modalInputContainer.classList.add('hidden');
+    dom.modalSwitchContainer.classList.add('hidden');
     dom.modalConfirmBtn.textContent = "确认"; 
     dom.modalConfirmBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
     dom.modalConfirmBtn.classList.add('bg-red-600', 'hover:bg-red-700');
@@ -236,20 +237,23 @@ export function showConfirmationModal(title, message, mode, callback = null, pro
         dom.modalConfirmBtn.textContent = "确认";
         dom.modalConfirmBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
         dom.modalConfirmBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+    } else if (mode === 'create-new') {
+        dom.modalInputContainer.classList.remove('hidden');
+        dom.modalSwitchContainer.classList.remove('hidden');
+        dom.modalInputLabel.textContent = "模板名称";
+        dom.modalInput.value = promptValue;
+        dom.modalButtonsConfirmCancel.classList.remove('hidden');
+        dom.modalConfirmBtn.textContent = "创建并开始";
+        dom.modalConfirmBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+        dom.modalConfirmBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
     }
     
     dom.confirmationModal.classList.remove('hidden');
     
-    if (mode === 'prompt') {
+    if (mode === 'prompt' || mode === 'create-new') {
         dom.modalInput.focus();
         dom.modalInput.select();
     }
-    
-    // 返回一个 Promise，以便 app.js 可以 await
-    return new Promise((resolve) => {
-        // 将回调和 resolve 绑定到按钮上
-        // 这部分在 app.js 中处理更清晰
-    });
 }
 
 /**
