@@ -87,7 +87,7 @@ export function populateUI(currentSettings) {
         rotatorEl.className = "flex flex-col items-center p-4 bg-gray-800 rounded-xl shadow-lg w-full";
         rotatorEl.innerHTML = `
             <span class="text-lg text-gray-400 mb-2">${rotator.label}</span>
-            <div id="rotator-value-${rotator.id}" class="text-2xl md:text-3xl font-bold text-yellow-400 min-h-10 flex items-center justify-center overflow-visible break-words w-full">
+            <div id="rotator-value-${rotator.id}" class="text-2xl md:text-3xl font-bold text-yellow-400 h-24 flex items-center justify-center text-center break-words w-full p-1">
                 ---
             </div>
         `;
