@@ -96,9 +96,20 @@ function updateRotators() {
 function getRandomFromPool(rotatorId) {
     const currentSettings = getSettings();
     
-    // V8 逻辑将在这里分支
-    // 目前, 强制使用 sharedPool
-    const pool = currentSettings.sharedPool;
+    let pool;
+    
+    if (currentSettings.isSharedPool) {
+        // --- 共享池逻辑 ---
+        pool = currentSettings.sharedPool;
+    } else {
+        // --- 独立池逻辑 ---
+        const rotator = currentSettings.rotators.find(r => r.id === rotatorId);
+        if (rotator) {
+            pool = rotator.individualPool;
+        } else {
+            pool = []; // 未找到指定 rotator, 使用空池
+        }
+    }
     
     if (!pool || pool.length === 0) return '???';
     if (pool.length === 1) return pool[0];
@@ -118,3 +129,4 @@ function getRandomFromPool(rotatorId) {
 export function getIsRunning() {
     return isRunning;
 }
+

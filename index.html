@@ -90,10 +90,10 @@
                     <div class="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
                         <label for="setting-share-pool" class="text-sm font-medium text-gray-300">
                             共享轮换池
-                            <span class="text-xs text-gray-400 block">(V8功能: 暂时禁用)</span>
+                            <span class="text-xs text-gray-400 block">(关闭以使用独立池)</span>
                         </label>
                         <label class="switch">
-                            <input type="checkbox" id="setting-share-pool" checked disabled>
+                            <input type="checkbox" id="setting-share-pool" checked>
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -168,6 +168,21 @@
     <!-- Toast 提示 -->
     <div id="toast-notification" class="hidden opacity-0 fixed bottom-5 left-1/2 -translate-x-1/2 bg-green-600 text-white py-2 px-5 rounded-lg shadow-lg z-40">
         设置已保存
+    </div>
+
+    <!-- 新增: 独立池编辑模态框 -->
+    <div id="individual-pool-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 text-white p-6 rounded-lg shadow-xl w-full max-w-md flex flex-col h-[70vh]">
+            <div class="flex justify-between items-center mb-4 flex-shrink-0">
+                <h3 id="individual-pool-title" class="text-lg font-bold">编辑轮换池</h3>
+                <button id="individual-pool-close-btn" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <p class="text-sm text-gray-400 mb-4 flex-shrink-0">请在下方输入轮换池内容 (每行一个)。</p>
+            <textarea id="individual-pool-textarea" rows="10" class="w-full h-full flex-grow bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"></textarea>
+            <button id="individual-pool-save-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-lg flex-shrink-0">
+                保存并关闭
+            </button>
+        </div>
     </div>
 
     <!-- 3. 引入 ES 模块的主 JS 文件 -->

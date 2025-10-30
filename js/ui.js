@@ -106,11 +106,11 @@ export function populateSettingsForm(template, onAddRotatorField) {
     
     dom.settingSharePoolToggle.checked = template.isSharedPool;
     dom.sharedPoolContainer.style.display = template.isSharedPool ? 'block' : 'none';
-    dom.settingSharePoolToggle.disabled = true; // V8 暂时禁用
+    dom.settingSharePoolToggle.disabled = template.isDefault; // 默认模板不允许切换
 
     dom.settingsRotatorsContainer.innerHTML = '';
     config.rotators.forEach(rotator => {
-        onAddRotatorField(rotator.label, false);
+        onAddRotatorField(rotator, false); // 传入整个 rotator
     });
     
     // 根据是否为默认模板显示/隐藏按钮
@@ -133,12 +133,14 @@ export function populateSettingsForm(template, onAddRotatorField) {
  * @param {string} value - 字段的初始值
  * @param {Function} onFieldChanged - 字段值变动时的回调
  * @param {Function} onFieldRemoved - 字段被移除时的回调
+ * @param {Function} onEditPool - 编辑独立池按钮的回调
  */
-export function addRotatorField(value = '', onFieldChanged, onFieldRemoved) {
+export function addRotatorField(rotator, showPoolButton, onFieldChanged, onFieldRemoved, onEditPool) {
     const fieldEl = document.createElement('div');
     fieldEl.className = "flex items-center space-x-2 w-full";
     fieldEl.innerHTML = `
-        <input type="text" value="${value}" class="flex-grow bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="轮换位名称 (如: 敌人是)">
+        <input type="text" value="${rotator.label}" class="flex-grow bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="轮换位名称 (如: 敌人是)">
+        <button class="edit-individual-pool-btn ${showPoolButton ? '' : 'hidden'} bg-yellow-600 hover:bg-yellow-700 text-white font-bold p-2 rounded-lg text-sm">编辑池</button>
         <button class="remove-rotator-btn bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-lg w-10">-</button>
     `;
     dom.settingsRotatorsContainer.appendChild(fieldEl);
@@ -146,11 +148,28 @@ export function addRotatorField(value = '', onFieldChanged, onFieldRemoved) {
     fieldEl.querySelector('.remove-rotator-btn').addEventListener('click', (e) => {
         if (e.target.disabled) return;
         fieldEl.remove();
-        onFieldRemoved();
+        onFieldRemoved(rotator); // 传递 rotator 对象
     });
     fieldEl.querySelector('input').addEventListener('input', (e) => {
         if (e.target.disabled) return;
         onFieldChanged();
+    });
+    // 绑定新按钮
+    fieldEl.querySelector('.edit-individual-pool-btn').addEventListener('click', (e) => {
+        e.stopPropagation(); 
+        if (e.target.disabled) return;
+        onEditPool(rotator);
+    });
+}
+
+/**
+ * 切换所有独立池 "编辑池" 按钮的可见性
+ * @param {boolean} show - 是否显示
+ */
+export function toggleIndividualPoolButtons(show) {
+    const buttons = dom.settingsRotatorsContainer.querySelectorAll('.edit-individual-pool-btn');
+    buttons.forEach(btn => {
+        btn.classList.toggle('hidden', !show);
     });
 }
 
@@ -228,6 +247,25 @@ export function showConfirmationModal(title, message, mode, callback = null, pro
 export function hideModal() {
     dom.confirmationModal.classList.add('hidden');
 }
+
+/**
+ * 新增: 显示独立池编辑模态框
+ * @param {Object} rotator - 轮换位对象
+ */
+export function showIndividualPoolModal(rotator) {
+    dom.individualPoolTitle.textContent = `编辑: ${rotator.label}`;
+    dom.individualPoolTextarea.value = (rotator.individualPool || []).join('\n');
+    dom.individualPoolModal.classList.remove('hidden');
+    dom.individualPoolTextarea.focus();
+}
+
+/**
+ * 新增: 隐藏独立池编辑模态框
+ */
+export function hideIndividualPoolModal() {
+    dom.individualPoolModal.classList.add('hidden');
+}
+
 
 /**
  * 切换页面显示

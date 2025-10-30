@@ -16,6 +16,7 @@ let appData = {
 let currentSettings = {}; // 当前激活模板的 *配置副本*
 let settingsHaveChanged = false;
 let modalConfirmCallback = null; 
+let editingRotatorId = null; // 新增: 跟踪正在编辑的独立池ID
 
 // --- 导航 ---
 function showHomePage() {
@@ -69,6 +70,8 @@ function editTemplate(templateId) {
     currentSettings = structuredClone(template.config); 
     
     ui.populateSettingsForm(template, handleAddRotatorField);
+    // 新增: 设置独立池按钮的初始可见性
+    ui.toggleIndividualPoolButtons(!template.isSharedPool);
     showSettings();
 }
 
@@ -118,7 +121,7 @@ function createNewTemplate() {
             id: `custom-${Date.now()}`,
             name: newName,
             isDefault: false,
-            isSharedPool: true,
+            isSharedPool: true, // 默认新模板为共享池
             config: {
                 locationText: "我的情景",
                 speed: 30,
@@ -161,23 +164,34 @@ function saveSettings() {
     const newSpeed = parseInt(dom.settingSpeedSlider.value, 10);
     const newSharedPool = dom.settingPoolTextarea.value.split('\n').map(s => s.trim()).filter(Boolean);
     
+    const isSharedPool = dom.settingSharePoolToggle.checked;
+    
     const newRotators = [];
-    const rotatorInputs = dom.settingsRotatorsContainer.querySelectorAll('input');
-    rotatorInputs.forEach((input, index) => {
-        if (input.value) {
-            // V8: 独立池逻辑将在此处添加
-            newRotators.push({ 
-                id: index, 
-                label: input.value, 
-                individualPool: [] // V8 待办
-            });
-        }
+    const rotatorLabelInputs = dom.settingsRotatorsContainer.querySelectorAll('input[type="text"]');
+
+    rotatorLabelInputs.forEach((input, index) => {
+        const label = input.value;
+        if (!label) return; // 忽略空标签
+
+        // 从 currentSettings 中获取对应的 rotator 数据 (依赖 DOM 和内存顺序一致)
+        const currentRotatorData = currentSettings.rotators[index];
+        
+        // 如果是共享池, individualPool 设为空数组
+        // 如果是独立池, 保留 currentRotatorData 中的 individualPool
+        // V9 修复: 确保 currentRotatorData 存在
+        const individualPool = (isSharedPool || !currentRotatorData) ? [] : currentRotatorData.individualPool;
+
+        newRotators.push({
+            id: index, // 始终重新索引 ID
+            label: label,
+            individualPool: individualPool
+        });
     });
 
     // 更新 appData 中的模板
     const template = appData.templates[templateIndex];
     template.name = newName;
-    template.isSharedPool = dom.settingSharePoolToggle.checked; 
+    template.isSharedPool = isSharedPool; 
     template.config = {
         locationText: newLocationText, 
         speed: newSpeed,
@@ -225,13 +239,15 @@ function handleDeleteTemplate(templateId, from) {
         if (appData.activeTemplateId === templateId) {
             appData.activeTemplateId = config.defaultOverwatchTemplate.id;
         }
+        
+        // --- FIX: 从这里开始的代码在您提供的版本中丢失了 ---
         storage.saveAppData(appData);
         
         ui.hideModal();
         ui.showToast(`模板 "${template.name}" 已删除`);
         
-        // 如果在设置页删除，则返回主页
         if (from === 'settings') {
+            // 如果在设置页删除，则返回主页
             showHomePage();
         } else {
             // 否则 (在主页删除)，刷新主页列表
@@ -242,7 +258,8 @@ function handleDeleteTemplate(templateId, from) {
                 onDuplicate: handleDuplicateTemplate
             });
         }
-    };
+        // --- FIX: 丢失的代码到此结束 ---
+    }; // FIX: 缺少此 '};'
     
     ui.showConfirmationModal(
         `删除模板 "${template.name}"`,
@@ -250,16 +267,43 @@ function handleDeleteTemplate(templateId, from) {
         "confirm-cancel",
         modalConfirmCallback
     );
+} // FIX: 缺少此 '}'
+
+function handleAddRotatorField(rotator, markAsChange = true) {
+    if (markAsChange) settingsHaveChanged = true;
+
+    let rotatorData = rotator;
+    if (!rotatorData) {
+        // 这是来自 "+" 按钮的新轮换位
+        rotatorData = { 
+            id: Date.now(), // 临时唯一 ID
+            label: '', 
+            individualPool: [] 
+        };
+        // 关键: 将新轮换位添加到内存中的设置
+        currentSettings.rotators.push(rotatorData); 
+    }
+
+    ui.addRotatorField(
+        rotatorData, 
+        !dom.settingSharePoolToggle.checked, // showPoolButton
+        () => { settingsHaveChanged = true; }, // onFieldChanged
+        (removedRotator) => { // onFieldRemoved
+            settingsHaveChanged = true; 
+            // 关键: 从内存中的设置移除
+            currentSettings.rotators = currentSettings.rotators.filter(r => r.id !== removedRotator.id);
+        },
+        (r) => { openPoolEditor(r); } // onEditPool
+    );
 }
 
-// 在设置页添加轮换位字段的包装器
-function handleAddRotatorField(value = '', markAsChange = true) {
-    if (markAsChange) settingsHaveChanged = true;
-    
-    ui.addRotatorField(value, 
-        () => { settingsHaveChanged = true; }, // onFieldChanged
-        () => { settingsHaveChanged = true; }  // onFieldRemoved
-    );
+/**
+ * 新增: 打开独立池编辑器
+ * @param {Object} rotator - 轮换位对象
+ */
+function openPoolEditor(rotator) {
+    editingRotatorId = rotator.id; // 跟踪正在编辑的 ID
+    ui.showIndividualPoolModal(rotator);
 }
 
 
@@ -306,6 +350,14 @@ window.addEventListener('DOMContentLoaded', () => {
     dom.addRotatorButton.addEventListener('click', () => handleAddRotatorField(undefined, true));
     dom.resetTemplateBtn.addEventListener('click', handleResetTemplate);
     dom.deleteTemplateBtn.addEventListener('click', () => handleDeleteTemplate(appData.activeTemplateId, 'settings'));
+
+    // 新增: "共享轮换池" 开关
+    dom.settingSharePoolToggle.addEventListener('change', (e) => {
+        const isShared = e.target.checked;
+        dom.sharedPoolContainer.style.display = isShared ? 'block' : 'none';
+        ui.toggleIndividualPoolButtons(!isShared);
+        settingsHaveChanged = true;
+    });
 
     // 设置页导航
     dom.backToGameBtn.addEventListener('click', () => {
@@ -354,6 +406,25 @@ window.addEventListener('DOMContentLoaded', () => {
         modalConfirmCallback = null; 
     });
 
+    // 新增: 独立池模态框按钮
+    dom.individualPoolCloseBtn.addEventListener('click', ui.hideIndividualPoolModal);
+    
+    dom.individualPoolSaveBtn.addEventListener('click', () => {
+        const newPool = dom.individualPoolTextarea.value.split('\n').map(s => s.trim()).filter(Boolean);
+        
+        const rotatorIndex = currentSettings.rotators.findIndex(r => r.id === editingRotatorId);
+        
+        if (rotatorIndex > -1) {
+            currentSettings.rotators[rotatorIndex].individualPool = newPool;
+            settingsHaveChanged = true;
+            ui.hideIndividualPoolModal();
+            ui.showToast("独立池已保存");
+        } else {
+            ui.showToast("保存失败: 找不到轮换位", true);
+        }
+        editingRotatorId = null; // 重置
+    });
+
     // 标记更改 (仅限非禁用时)
     const markChanged = () => { if (!settingsHaveChanged) settingsHaveChanged = true; };
     dom.settingTemplateNameInput.addEventListener('input', markChanged);
@@ -363,4 +434,4 @@ window.addEventListener('DOMContentLoaded', () => {
         dom.settingSpeedValueDisplay.textContent = `${e.target.value} 个/秒`;
         markChanged();
     });
-});
+}); // FIX: 缺少此 '});' 来关闭 DOMContentLoaded

@@ -52,3 +52,11 @@ export const modalInput = document.getElementById('modal-input');
 
 // Toast
 export const toastNotification = document.getElementById('toast-notification');
+
+// 新增: 独立池模态框
+export const individualPoolModal = document.getElementById('individual-pool-modal');
+export const individualPoolTitle = document.getElementById('individual-pool-title');
+export const individualPoolTextarea = document.getElementById('individual-pool-textarea');
+export const individualPoolSaveBtn = document.getElementById('individual-pool-save-btn');
+export const individualPoolCloseBtn = document.getElementById('individual-pool-close-btn');
+

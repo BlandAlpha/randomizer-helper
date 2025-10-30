@@ -1,7 +1,7 @@
 // js/storage.js
 // 专门处理 localStorage 的读取、写入和迁移
 
-import { V1_STORAGE_KEY, V2_STORAGE_KEY, defaultOverwatchTemplate, defaultOverwatchPool } from './config.js';
+import { V1_STORAGE_KEY, V2_STORAGE_KEY, defaultOverwatchTemplate, defaultOverwatchPool, defaultCOCTemplate } from './config.js';
 import { showToast } from './ui.js';
 
 // 初始化应用数据
@@ -27,6 +27,12 @@ export function initializeApp() {
     // 确保至少有默认模板
     if (!appData.templates.find(t => t.id === defaultOverwatchTemplate.id)) {
         appData.templates.unshift(structuredClone(defaultOverwatchTemplate));
+        saveAppData(appData);
+    }
+    
+    // 新增：确保 COC 模板存在
+    if (!appData.templates.find(t => t.id === defaultCOCTemplate.id)) {
+        appData.templates.push(structuredClone(defaultCOCTemplate)); // push 到末尾
         saveAppData(appData);
     }
     
@@ -94,3 +100,4 @@ export function saveAppData(appData) {
         showToast("保存失败!", true);
     }
 }
+
