@@ -58,8 +58,12 @@ function loadTemplate(templateId) {
     
     storage.saveAppData(appData); // 保存 activeTemplateId
     
-    ui.populateUI(currentSettings);
-    game.stopGame(); // 确保加载后是停止状态
+    // 使用 resetGame 来确保进入页面时是初始状态
+    game.resetGame(() => ui.populateUI(currentSettings));
+    
+    // 根据是否为默认模板，显示或隐藏设置按钮
+    dom.settingsButton.style.display = template.isDefault ? 'none' : 'block';
+    
     showGame();
 }
 
@@ -189,7 +193,6 @@ function saveSettings() {
     // 从表单读取数据
     const newName = dom.settingTemplateNameInput.value || "未命名模板";
     const newLocationText = dom.settingLocationInput.value;
-    const newSpeed = parseInt(dom.settingSpeedSlider.value, 10);
     const newSharedPool = dom.settingPoolTextarea.value.split('\n').map(s => s.trim()).filter(Boolean);
     
     const isSharedPool = dom.settingSharePoolToggle.checked;
@@ -222,7 +225,7 @@ function saveSettings() {
     template.isSharedPool = isSharedPool; 
     template.config = {
         locationText: newLocationText, 
-        speed: newSpeed,
+        speed: currentSettings.speed, // 保留旧的速度值
         sharedPool: newSharedPool,
         rotators: newRotators
     };
@@ -491,8 +494,4 @@ window.addEventListener('DOMContentLoaded', () => {
     dom.settingTemplateNameInput.addEventListener('input', markChanged);
     dom.settingLocationInput.addEventListener('input', markChanged);
     dom.settingPoolTextarea.addEventListener('input', markChanged);
-    dom.settingSpeedSlider.addEventListener('input', (e) => {
-        dom.settingSpeedValueDisplay.textContent = `${e.target.value} 个/秒`;
-        markChanged();
-    });
 }); // FIX: 缺少此 '});' 来关闭 DOMContentLoaded

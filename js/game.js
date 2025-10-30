@@ -9,6 +9,28 @@ let lastRotatorValues = {};
 let getSettings = () => ({}); // 获取当前设置的函数
 
 /**
+ * 动态调整元素内的字体大小以适应容器
+ * @param {HTMLElement} el - 需要调整字体大小的元素
+ */
+function adjustFontSize(el) {
+    // 恢复默认字体大小，以处理文本变短的情况
+    el.style.fontSize = '';
+
+    // 如果内容没有溢出，则无需调整
+    if (el.scrollHeight <= el.clientHeight && el.scrollWidth <= el.clientWidth) {
+        return;
+    }
+
+    let fontSize = parseFloat(window.getComputedStyle(el).fontSize);
+    // 循环减小字号，直到内容不再溢出
+    while ((el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth) && fontSize > 12) {
+        fontSize -= 1;
+        el.style.fontSize = fontSize + 'px';
+    }
+}
+
+
+/**
  * 初始化游戏模块
  * @param {Function} settingsGetter - 一个返回 currentSettings 对象的函数
  */
@@ -25,8 +47,10 @@ export function startGame() {
     dom.togglePauseButton.textContent = '暂停';
     dom.togglePauseButton.classList.remove('bg-green-600', 'hover:bg-green-700');
     dom.togglePauseButton.classList.add('bg-red-600', 'hover:bg-red-700');
+    dom.restartButton.classList.remove('hidden');
     
     const currentSettings = getSettings();
+    // 注意: speed 现在是模板配置的一部分，但UI上不可调
     let currentSpeed = parseInt(currentSettings.speed, 10) || 30;
     let intervalInMs = 1000 / currentSpeed;
     
@@ -44,7 +68,7 @@ export function stopGame() {
         intervalId = null;
     }
     if (dom.togglePauseButton) {
-        dom.togglePauseButton.textContent = '开始';
+        dom.togglePauseButton.textContent = '继续';
         dom.togglePauseButton.classList.remove('bg-red-600', 'hover:bg-red-700');
         dom.togglePauseButton.classList.add('bg-green-600', 'hover:bg-green-700');
     }
@@ -56,7 +80,6 @@ export function stopGame() {
 export function togglePause() {
     if (isRunning) {
         stopGame();
-        dom.togglePauseButton.textContent = '继续'; 
     } else {
         startGame();
     }
@@ -67,12 +90,15 @@ export function togglePause() {
  * @param {Function} onReset - 重置时调用的回调(用于 populateUI)
  */
 export function resetGame(onReset) {
-    if (isRunning) stopGame();
+    stopGame(); // 确保停止
     lastRotatorValues = {};
-    onReset(); // 调用 app.js 中的 populateUI
+    onReset(); // 调用 app.js 中的 populateUI 来重置DOM
+    
+    // 恢复初始按钮状态
     dom.togglePauseButton.textContent = '开始';
     dom.togglePauseButton.classList.remove('bg-red-600', 'hover:bg-red-700');
     dom.togglePauseButton.classList.add('bg-green-600', 'hover:bg-green-700');
+    dom.restartButton.classList.add('hidden');
 }
 
 /**
@@ -84,7 +110,10 @@ function updateRotators() {
     
     currentSettings.rotators.forEach(rotator => {
         const el = document.getElementById(`rotator-value-${rotator.id}`);
-        if (el) el.textContent = getRandomFromPool(rotator.id);
+        if (el) {
+            el.textContent = getRandomFromPool(rotator.id);
+            adjustFontSize(el); // 动态调整字号
+        }
     });
 }
 

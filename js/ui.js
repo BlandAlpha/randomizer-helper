@@ -79,7 +79,7 @@ export function populateUI(currentSettings) {
         rotatorEl.className = "flex flex-col items-center p-4 bg-gray-800 rounded-xl shadow-lg w-full";
         rotatorEl.innerHTML = `
             <span class="text-lg text-gray-400 mb-2">${rotator.label}</span>
-            <div id="rotator-value-${rotator.id}" class="text-2xl md:text-3xl font-bold text-yellow-400 h-24 flex items-center justify-center text-center break-words w-full p-1">
+            <div id="rotator-value-${rotator.id}" class="text-2xl md:text-3xl font-bold text-yellow-400 h-24 flex items-center justify-center text-center break-words w-full p-1 overflow-hidden">
                 ---
             </div>
         `;
@@ -93,7 +93,7 @@ export function populateUI(currentSettings) {
  * @param {Function} onAddRotatorField - 添加轮换位字段的回调
  */
 export function populateSettingsForm(template, onAddRotatorField) {
-    if (!dom.settingLocationInput || !dom.settingsRotatorsContainer || !dom.settingPoolTextarea || !dom.settingSpeedSlider) return;
+    if (!dom.settingLocationInput || !dom.settingsRotatorsContainer || !dom.settingPoolTextarea) return;
     
     const { config, isDefault, name } = template;
     
@@ -101,8 +101,6 @@ export function populateSettingsForm(template, onAddRotatorField) {
     dom.settingTemplateNameInput.value = name;
     dom.settingLocationInput.value = config.locationText;
     dom.settingPoolTextarea.value = (config.sharedPool || []).join('\n');
-    dom.settingSpeedSlider.value = config.speed;
-    dom.settingSpeedValueDisplay.textContent = `${config.speed} 个/秒`;
     
     dom.settingSharePoolToggle.checked = template.isSharedPool;
     dom.sharedPoolContainer.style.display = template.isSharedPool ? 'block' : 'none';
