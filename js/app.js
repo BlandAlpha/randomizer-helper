@@ -129,7 +129,7 @@ function handleDuplicateTemplate(templateId) {
 // 创建新模板
 function createNewTemplate() {
     modalConfirmCallback = (newName) => {
-        const isShared = dom.modalPoolTypeSwitch.checked;
+        const isShared = dom.modalPoolTypeSharedBtn.classList.contains('active');
 
         if (!newName || newName.trim() === '') {
             ui.showToast("名称不能为空", true);
@@ -199,7 +199,7 @@ function saveSettings() {
     const newLocationText = dom.settingLocationInput.value;
     const newSharedPool = dom.settingPoolTextarea.value.split('\n').map(s => s.trim()).filter(Boolean);
     
-    const isSharedPool = dom.settingSharePoolToggle.checked;
+    const isSharedPool = dom.settingPoolTypeSharedBtn.classList.contains('active');
     
     const newRotators = [];
     const rotatorLabelInputs = dom.settingsRotatorsContainer.querySelectorAll('input[type="text"]');
@@ -307,7 +307,7 @@ function handleAddRotatorField(rotator, markAsChange = true) {
 
     ui.addRotatorField(
         rotatorData, 
-        !dom.settingSharePoolToggle.checked, // showPoolButton
+        !dom.settingPoolTypeSharedBtn.classList.contains('active'), // showPoolButton
         () => { settingsHaveChanged = true; }, // onFieldChanged
         (removedRotator) => { // onFieldRemoved
             settingsHaveChanged = true; 
@@ -371,11 +371,21 @@ window.addEventListener('DOMContentLoaded', () => {
     dom.addRotatorButton.addEventListener('click', () => handleAddRotatorField(undefined, true));
     dom.deleteTemplateBtn.addEventListener('click', () => handleDeleteTemplate(appData.activeTemplateId, 'settings'));
 
-    // 新增: "共享轮换池" 开关
-    dom.settingSharePoolToggle.addEventListener('change', (e) => {
-        const isShared = e.target.checked;
-        dom.sharedPoolContainer.style.display = isShared ? 'block' : 'none';
-        ui.toggleIndividualPoolButtons(!isShared);
+    // 设置页分段控件
+    dom.settingPoolTypeSharedBtn.addEventListener('click', () => {
+        if (dom.settingPoolTypeSharedBtn.disabled || dom.settingPoolTypeSharedBtn.classList.contains('active')) return;
+        dom.settingPoolTypeSharedBtn.classList.add('active');
+        dom.settingPoolTypeIndividualBtn.classList.remove('active');
+        dom.sharedPoolContainer.style.display = 'block';
+        ui.toggleIndividualPoolButtons(false);
+        settingsHaveChanged = true;
+    });
+    dom.settingPoolTypeIndividualBtn.addEventListener('click', () => {
+        if (dom.settingPoolTypeIndividualBtn.disabled || dom.settingPoolTypeIndividualBtn.classList.contains('active')) return;
+        dom.settingPoolTypeIndividualBtn.classList.add('active');
+        dom.settingPoolTypeSharedBtn.classList.remove('active');
+        dom.sharedPoolContainer.style.display = 'none';
+        ui.toggleIndividualPoolButtons(true);
         settingsHaveChanged = true;
     });
 
@@ -453,6 +463,18 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         // 重置回调，防止重复触发
         modalConfirmCallback = null; 
+    });
+
+    // 新建模态框分段控件
+    dom.modalPoolTypeSharedBtn.addEventListener('click', () => {
+        if (dom.modalPoolTypeSharedBtn.classList.contains('active')) return;
+        dom.modalPoolTypeSharedBtn.classList.add('active');
+        dom.modalPoolTypeIndividualBtn.classList.remove('active');
+    });
+    dom.modalPoolTypeIndividualBtn.addEventListener('click', () => {
+        if (dom.modalPoolTypeIndividualBtn.classList.contains('active')) return;
+        dom.modalPoolTypeIndividualBtn.classList.add('active');
+        dom.modalPoolTypeSharedBtn.classList.remove('active');
     });
 
     // 新增: 独立池模态框按钮

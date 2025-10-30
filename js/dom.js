@@ -29,8 +29,11 @@ export const settingLocationInput = document.getElementById('setting-location');
 export const settingsRotatorsContainer = document.getElementById('settings-rotators-container');
 export const settingPoolTextarea = document.getElementById('setting-pool');
 export const deleteTemplateBtn = document.getElementById('delete-template-btn');
-export const settingSharePoolToggle = document.getElementById('setting-share-pool');
 export const sharedPoolContainer = document.getElementById('shared-pool-container');
+
+// 新增: 设置页分段控件
+export const settingPoolTypeSharedBtn = document.getElementById('setting-pool-type-shared-btn');
+export const settingPoolTypeIndividualBtn = document.getElementById('setting-pool-type-individual-btn');
 
 // 新增: 设置页操作按钮容器
 export const settingsActionsPrimary = document.getElementById('settings-actions-primary');
@@ -50,8 +53,10 @@ export const modalButtonsConfirmCancel = document.getElementById('modal-buttons-
 export const modalInputContainer = document.getElementById('modal-input-container');
 export const modalInputLabel = document.getElementById('modal-input-label');
 export const modalInput = document.getElementById('modal-input');
-export const modalSwitchContainer = document.getElementById('modal-switch-container');
-export const modalPoolTypeSwitch = document.getElementById('modal-pool-type-switch');
+
+export const modalSegmentContainer = document.getElementById('modal-segment-container');
+export const modalPoolTypeSharedBtn = document.getElementById('modal-pool-type-shared-btn');
+export const modalPoolTypeIndividualBtn = document.getElementById('modal-pool-type-individual-btn');
 
 // Toast
 export const toastNotification = document.getElementById('toast-notification');

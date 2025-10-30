@@ -97,15 +97,12 @@
                         <input type="text" id="setting-location" class="w-full bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     
-                    <div class="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
-                        <label for="setting-share-pool" class="text-sm font-medium text-gray-300">
-                            共享轮换池
-                            <span class="text-xs text-gray-400 block">(关闭以使用独立池)</span>
-                        </label>
-                        <label class="switch">
-                            <input type="checkbox" id="setting-share-pool" checked>
-                            <span class="slider"></span>
-                        </label>
+                    <div class="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+                        <span class="text-sm font-medium text-gray-300">轮换池类型</span>
+                        <div class="flex bg-gray-900/50 p-1 rounded-lg space-x-1">
+                            <button id="setting-pool-type-shared-btn" class="segment-control-btn px-4 py-1 text-sm font-medium rounded-md">共享池</button>
+                            <button id="setting-pool-type-individual-btn" class="segment-control-btn px-4 py-1 text-sm font-medium rounded-md">独立池</button>
+                        </div>
                     </div>
 
                     <div>
@@ -126,7 +123,7 @@
                 <div class="mt-6 flex-shrink-0 space-y-4">
                     <div id="settings-actions-primary">
                         <button id="save-settings-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-lg">
-                            保存并关闭
+                            保存并返回
                         </button>
                     </div>
 
@@ -154,15 +151,11 @@
                 <input type="text" id="modal-input" class="w-full bg-gray-600 border border-gray-500 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
-            <div id="modal-switch-container" class="hidden my-4 flex items-center justify-between p-3 bg-gray-600 rounded-lg">
-                <label for="modal-pool-type-switch" class="text-sm font-medium text-gray-300">
-                    共享轮换池
-                    <span class="text-xs text-gray-400 block">(关闭以使用独立池)</span>
-                </label>
-                <label class="switch">
-                    <input type="checkbox" id="modal-pool-type-switch" checked>
-                    <span class="slider"></span>
-                </label>
+            <div id="modal-segment-container" class="hidden my-4">
+                <div class="flex bg-gray-600 p-1 rounded-lg space-x-1">
+                    <button id="modal-pool-type-shared-btn" class="segment-control-btn flex-1 px-4 py-2 text-sm font-medium rounded-md">共享池</button>
+                    <button id="modal-pool-type-individual-btn" class="segment-control-btn flex-1 px-4 py-2 text-sm font-medium rounded-md">独立池</button>
+                </div>
             </div>
 
             <div id="modal-buttons-save-discard" class="flex flex-col gap-3">
@@ -205,7 +198,7 @@
             <p class="text-sm text-gray-400 mb-4 flex-shrink-0">请在下方输入轮换池内容 (每行一个)。</p>
             <textarea id="individual-pool-textarea" rows="10" class="w-full h-full flex-grow bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"></textarea>
             <button id="individual-pool-save-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-lg flex-shrink-0">
-                保存并关闭
+                保存并返回
             </button>
         </div>
     </div>

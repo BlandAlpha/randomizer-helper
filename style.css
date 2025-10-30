@@ -150,3 +150,19 @@ input:disabled + .slider {
 input:disabled + .slider:before { 
     background-color: #9ca3af; 
 }
+
+/* 分段控件 */
+.segment-control-btn {
+    color: #d1d5db; /* gray-300 */
+    transition: background-color 0.2s, color 0.2s;
+    border: none;
+    background: transparent;
+}
+.segment-control-btn:hover:not(.active) {
+    background-color: #4b5563; /* gray-600 */
+}
+.segment-control-btn.active {
+    background-color: #3b82f6; /* blue-600 */
+    color: white;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}

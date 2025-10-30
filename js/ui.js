@@ -102,9 +102,19 @@ export function populateSettingsForm(template, onAddRotatorField) {
     dom.settingLocationInput.value = config.locationText;
     dom.settingPoolTextarea.value = (config.sharedPool || []).join('\n');
     
-    dom.settingSharePoolToggle.checked = template.isSharedPool;
+    // 设置分段控件状态
+    if (template.isSharedPool) {
+        dom.settingPoolTypeSharedBtn.classList.add('active');
+        dom.settingPoolTypeIndividualBtn.classList.remove('active');
+    } else {
+        dom.settingPoolTypeSharedBtn.classList.remove('active');
+        dom.settingPoolTypeIndividualBtn.classList.add('active');
+    }
     dom.sharedPoolContainer.style.display = template.isSharedPool ? 'block' : 'none';
-    dom.settingSharePoolToggle.disabled = template.isDefault; // 默认模板不允许切换
+    
+    // 默认模板不允许切换
+    dom.settingPoolTypeSharedBtn.disabled = template.isDefault;
+    dom.settingPoolTypeIndividualBtn.disabled = template.isDefault;
 
     dom.settingsRotatorsContainer.innerHTML = '';
     config.rotators.forEach(rotator => {
@@ -217,7 +227,7 @@ export function showConfirmationModal(title, message, mode, callback = null, pro
     dom.modalButtonsSaveDiscard.classList.add('hidden');
     dom.modalButtonsConfirmCancel.classList.add('hidden');
     dom.modalInputContainer.classList.add('hidden');
-    dom.modalSwitchContainer.classList.add('hidden');
+    dom.modalSegmentContainer.classList.add('hidden');
     dom.modalConfirmBtn.textContent = "确认"; 
     dom.modalConfirmBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
     dom.modalConfirmBtn.classList.add('bg-red-600', 'hover:bg-red-700');
@@ -236,7 +246,11 @@ export function showConfirmationModal(title, message, mode, callback = null, pro
         dom.modalConfirmBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
     } else if (mode === 'create-new') {
         dom.modalInputContainer.classList.remove('hidden');
-        dom.modalSwitchContainer.classList.remove('hidden');
+        dom.modalSegmentContainer.classList.remove('hidden');
+        // 设置默认状态
+        dom.modalPoolTypeSharedBtn.classList.add('active');
+        dom.modalPoolTypeIndividualBtn.classList.remove('active');
+
         dom.modalInputLabel.textContent = "模板名称";
         dom.modalInput.value = promptValue;
         dom.modalButtonsConfirmCancel.classList.remove('hidden');
