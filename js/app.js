@@ -619,11 +619,6 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        slider.addEventListener('mousedown', startDrag);
-        slider.addEventListener('mousemove', onDrag);
-        slider.addEventListener('mouseup', stopDrag);
-        slider.addEventListener('mouseleave', stopDrag);
-
         // 移动端触摸支持
         slider.addEventListener('touchstart', startDrag, { passive: true });
         slider.addEventListener('touchmove', onDrag, { passive: false });
