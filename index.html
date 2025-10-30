@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轮换助手</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- 全局状态和配置 ---
+
+        // 默认轮换池
+        const defaultPool = [
+            "末日铁拳", "D.Va", "骇灾", "渣客女王", "毛加", "奥丽莎", "拉玛刹",
+            "莱因哈特", "路霸", "西格玛", "温斯顿", "破坏球", "查莉娅", "艾什",
+            "堡垒", "卡西迪", "回声", "弗蕾娅", "源氏", "半藏", "狂鼠", "美",
+            "法老之鹰", "死神", "索杰恩", "士兵：76", "黑影", "秩序之光",
+            "托比昂", "猎空", "探奇", "黑百合", "安娜", "巴蒂斯特", "布丽吉塔",
+            "伊拉锐", "朱诺", "雾子", "生命之梭", "卢西奥", "天使", "莫伊拉", "无漾"
+        ];
+
+        // 默认设置 (新增 speed)
+        const defaultSettings = {
+            locationText: "当你穿越到守望先锋你的",
+            rotators: [
+                { id: 0, label: "父亲是" },
+                { id: 1, label: "母亲是" },
+                { id: 2, label: "爱人是" },
+                { id: 3, label: "孩子是" }
+            ],
+            pool: defaultPool,
+            speed: 30 // 默认速度 30 个/秒
+        };
+
+        // 应用状态
+        let db, auth, userId, appId;
+        let settingsDocRef;
+        let settings = { ...defaultSettings };
+        let isRunning = false;
+        let intervalId = null;
+        let lastRotatorValues = {}; // 存储每个轮换位的上一个值
+
+        // --- DOM 元素 ---
+        let loader, gamePage, settingsPage, locationTextEl, rotatorGridEl,
+            togglePauseButton, restartButton, settingsButton, backButton,
+            saveSettingsButton, addRotatorButton, settingLocationInput,
+            settingsRotatorsContainer, settingPoolTextarea,
+            settingSpeedSlider, settingSpeedValueDisplay; // 新增速度滑块元素
+
+        // --- Firebase 初始化 ---
+        async function initFirebase() {
+            try {
+                // 1. 获取配置
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+                // 2. 初始化 App, Auth, Firestore
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                setLogLevel('Debug'); // 用于调试
+
+                // 3. 监听认证状态
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("用户已认证:", userId);
+                        loadData(); // 加载数据
+                    } else {
+                        // 4. 尝试登录
+                        try {
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (authError) {
+                            console.error("登录失败:", authError);
+                            loader.textContent = "无法连接到服务器。请刷新重试。";
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Firebase 初始化失败:", e);
+                loader.textContent = "应用加载失败。";
+            }
+        }
+
+        // --- 数据加载 (Firestore) ---
+        function loadData() {
+            if (!userId || !appId || !db) return;
+            
+            // 定义私有设置的文档路径
+            settingsDocRef = doc(db, 'artifacts', appId, 'users', userId, 'overwatch-randomizer', 'settings');
+
+            // 监听数据变化
+            const unsubscribe = onSnapshot(settingsDocRef, (docSnap) => {
+                const wasRunning = isRunning; // 检查在数据更新前是否在运行
+                if (wasRunning) {
+                    stopGame(); // 停止当前的游戏循环，准备用新设置重启
+                }
+
+                if (docSnap.exists()) {
+                    // 加载云端设置
+                    settings = docSnap.data();
+                    // 确保数据结构完整 (兼容旧数据)
+                    if (!settings.pool) settings.pool = defaultSettings.pool;
+                    if (!settings.rotators) settings.rotators = defaultSettings.rotators;
+                    if (!settings.locationText) settings.locationText = defaultSettings.locationText;
+                    if (!settings.speed) settings.speed = defaultSettings.speed; // 兼容旧数据
+
+                    console.log("从 Firestore 加载设置:", settings);
+                } else {
+                    // 没有云端设置，使用默认设置并保存
+                    console.log("未找到设置，创建默认设置...");
+                    settings = { ...defaultSettings };
+                    setDoc(settingsDocRef, settings).catch(e => console.error("保存默认设置失败:", e));
+                }
+                
+                // 数据加载完毕，更新UI
+                populateUI();
+                populateSettingsForm();
+                loader.classList.add('hidden');
+                gamePage.classList.remove('hidden');
+                
+                // 如果是首次加载 (intervalId === null) 或 之前在运行 (wasRunning)
+                // 则 (重新) 启动游戏
+                if (wasRunning || !intervalId) {
+                    startGame();
+                }
+            }, (error) => {
+                console.error("监听数据失败:", error);
+                loader.textContent = "加载数据失败。";
+            });
+        }
+
+        // --- UI 渲染 ---
+
+        // 渲染游戏主页面
+        function populateUI() {
+            if (!locationTextEl || !rotatorGridEl) return;
+            
+            locationTextEl.textContent = settings.locationText;
+            rotatorGridEl.innerHTML = '';
+            
+            settings.rotators.forEach(rotator => {
+                const rotatorEl = document.createElement('div');
+                rotatorEl.className = "flex flex-col items-center p-4 bg-gray-800 rounded-xl shadow-lg w-full";
+                rotatorEl.innerHTML = `
+                    <span class="text-lg text-gray-400 mb-2">${rotator.label}</span>
+                    <div id="rotator-value-${rotator.id}" class="text-2xl md:text-3xl font-bold text-yellow-400 h-10 flex items-center justify-center overflow-hidden">
+                        ---
+                    </div>
+                `;
+                rotatorGridEl.appendChild(rotatorEl);
+            });
+        }
+
+        // 填充设置页面表单
+        function populateSettingsForm() {
+            if (!settingLocationInput || !settingsRotatorsContainer || !settingPoolTextarea || !settingSpeedSlider) return;
+
+            settingLocationInput.value = settings.locationText;
+            settingPoolTextarea.value = settings.pool.join('\n');
+            
+            // 填充速度滑块
+            settingSpeedSlider.value = settings.speed;
+            settingSpeedValueDisplay.textContent = `${settings.speed} 个/秒`;
+
+            // 填充轮换位
+            settingsRotatorsContainer.innerHTML = '';
+            settings.rotators.forEach(rotator => {
+                addRotatorField(rotator.label);
+            });
+        }
+
+        // --- 游戏逻辑 ---
+
+        // 开始轮换 (使用 settings.speed)
+        function startGame() {
+            if (isRunning) return;
+            isRunning = true;
+            togglePauseButton.textContent = '暂停';
+            togglePauseButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+            togglePauseButton.classList.add('bg-red-600', 'hover:bg-red-700');
+            
+            // 根据设置的速度 (个/秒) 计算毫秒间隔
+            const intervalInMs = 1000 / settings.speed;
+            intervalId = setInterval(updateRotators, intervalInMs); 
+        }
+
+        // 停止轮换
+        function stopGame() {
+            if (!isRunning) return;
+            isRunning = false;
+            clearInterval(intervalId);
+            intervalId = null;
+            togglePauseButton.textContent = '已暂停 (点此继续)';
+            togglePauseButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+            togglePauseButton.classList.add('bg-green-600', 'hover:bg-green-700');
+        }
+
+        // 切换暂停/继续
+        function togglePause() {
+            if (isRunning) {
+                stopGame();
+            } else {
+                startGame();
+            }
+        }
+
+        // 重新开始
+        function resetGame() {
+            if (isRunning) {
+                stopGame();
+            }
+            lastRotatorValues = {}; // 重置“上一个值”的记录
+            populateUI(); // 重置显示为 "---"
+            startGame(); // 立刻重新开始
+        }
+
+        // 更新所有轮换位的值
+        function updateRotators() {
+            settings.rotators.forEach(rotator => {
+                const el = document.getElementById(`rotator-value-${rotator.id}`);
+                if (el) {
+                    // 传入 rotator.id 以便跟踪上一个值
+                    el.textContent = getRandomFromPool(rotator.id);
+                }
+            });
+        }
+
+        /**
+         * 从轮换池随机抽取一个 (新算法)
+         * 确保新值与上一个值不同 (除非池中只有1个项目)
+         * @param {number} rotatorId - 轮换位的ID
+         */
+        function getRandomFromPool(rotatorId) {
+            const pool = settings.pool;
+            if (!pool || pool.length === 0) return '???';
+            
+            // 边缘情况1: 如果池中只有1个, 直接返回
+            if (pool.length === 1) return pool[0];
+
+            const lastValue = lastRotatorValues[rotatorId]; // 获取该轮换位的上一个值
+            let newValue = '';
+
+            // 持续抽取，直到抽到与上一个值不同的新值
+            do {
+                newValue = pool[Math.floor(Math.random() * pool.length)];
+            } while (newValue === lastValue);
+
+            lastRotatorValues[rotatorId] = newValue; // 存储新值，供下次比较
+            return newValue;
+        }
+
+        // --- 页面导航 ---
+        function showSettings() {
+            gamePage.classList.add('hidden');
+            settingsPage.classList.remove('hidden');
+        }
+
+        function showGame() {
+            settingsPage.classList.add('hidden');
+            gamePage.classList.remove('hidden');
+        }
+
+        // --- 设置页面逻辑 ---
+
+        // 动态添加一个轮换位输入框
+        function addRotatorField(value = '') {
+            const fieldEl = document.createElement('div');
+            fieldEl.className = "flex items-center space-x-2 w-full";
+            fieldEl.innerHTML = `
+                <input type="text" value="${value}" class="flex-grow bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="轮换位名称 (如: 敌人是)">
+                <button class="remove-rotator-btn bg-red-600 hover:bg-red-700 text-white font-bold p-2 rounded-lg w-10">-</button>
+            `;
+            settingsRotatorsContainer.appendChild(fieldEl);
+            
+            // 绑定移除事件
+            fieldEl.querySelector('.remove-rotator-btn').addEventListener('click', () => {
+                fieldEl.remove();
+            });
+        }
+
+        // 保存设置到 Firestore
+        async function saveSettings() {
+            loader.classList.remove('hidden');
+            gamePage.classList.add('hidden');
+            settingsPage.classList.add('hidden');
+
+            // 1. 收集新设置
+            const newLocationText = settingLocationInput.value;
+            const newSpeed = parseInt(settingSpeedSlider.value, 10); // 获取速度值
+            const newPool = settingPoolTextarea.value.split('\n').map(s => s.trim()).filter(Boolean);
+            const newRotators = [];
+            
+            const rotatorInputs = settingsRotatorsContainer.querySelectorAll('input');
+            rotatorInputs.forEach((input, index) => {
+                if (input.value) {
+                    newRotators.push({ id: index, label: input.value });
+                }
+            });
+
+            const newSettings = {
+                locationText: newLocationText,
+                pool: newPool,
+                rotators: newRotators,
+                speed: newSpeed // 保存速度
+            };
+
+            // 2. 保存到 Firestore
+            try {
+                await setDoc(settingsDocRef, newSettings);
+                // settings 变量将通过 onSnapshot 自动更新并触发UI刷新和游戏重启
+                console.log("设置已保存!");
+                showGame(); // 保存后自动返回游戏页面
+            } catch (e) {
+                console.error("保存设置失败:", e);
+            } finally {
+                // onSnapshot 会处理 loader 的隐藏
+            }
+        }
+
+        // --- DOM 加载后执行 ---
+        window.addEventListener('DOMContentLoaded', () => {
+            // 获取所有 DOM 元素
+            loader = document.getElementById('loader');
+            gamePage = document.getElementById('game-page');
+            settingsPage = document.getElementById('settings-page');
+            locationTextEl = document.getElementById('location-text');
+            rotatorGridEl = document.getElementById('rotator-grid');
+            togglePauseButton = document.getElementById('toggle-pause-btn');
+            restartButton = document.getElementById('restart-btn');
+            settingsButton = document.getElementById('settings-btn');
+            backButton = document.getElementById('back-btn');
+            saveSettingsButton = document.getElementById('save-settings-btn');
+            addRotatorButton = document.getElementById('add-rotator-btn');
+            settingLocationInput = document.getElementById('setting-location');
+            settingsRotatorsContainer = document.getElementById('settings-rotators-container');
+            settingPoolTextarea = document.getElementById('setting-pool');
+            settingSpeedSlider = document.getElementById('setting-speed');
+            settingSpeedValueDisplay = document.getElementById('setting-speed-value');
+
+            // 绑定事件监听
+            togglePauseButton.addEventListener('click', togglePause);
+            restartButton.addEventListener('click', resetGame);
+            settingsButton.addEventListener('click', showSettings);
+            backButton.addEventListener('click', showGame);
+            saveSettingsButton.addEventListener('click', saveSettings);
+            addRotatorButton.addEventListener('click', () => addRotatorField());
+            
+            // 监听速度滑块的实时变化
+            settingSpeedSlider.addEventListener('input', (e) => {
+                settingSpeedValueDisplay.textContent = `${e.target.value} 个/秒`;
+            });
+            
+            // 初始化 Firebase
+            initFirebase();
+        });
+
+    </script>
+    <style>
+        /* 使用Inter字体 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* 自定义加载动画 */
+        #loader-spinner {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* 美化滑块 */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            margin: 6px 0;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #4a5568; /* gray-700 */
+            border-radius: 10px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #3b82f6; /* blue-600 */
+            cursor: pointer;
+            margin-top: -6px; /* 垂直居中 */
+            transition: background 0.2s;
+        }
+        input[type=range]:hover::-webkit-slider-thumb {
+            background: #2563eb; /* blue-700 */
+        }
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #4a5568;
+            border-radius: 10px;
+        }
+        input[type=range]::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: none;
+        }
+        input[type=range]:hover::-moz-range-thumb {
+            background: #2563eb;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <!-- 主应用容器 -->
+    <div id="app" class="w-full max-w-2xl mx-auto">
+
+        <!-- 加载指示器 -->
+        <div id="loader" class="flex flex-col items-center justify-center p-10">
+            <div id="loader-spinner"></div>
+            <p class="mt-4 text-lg">正在连接并加载数据...</p>
+        </div>
+
+        <!-- 游戏页面 -->
+        <div id="game-page" class="hidden">
+            <div class="bg-gray-800/50 backdrop-blur-sm p-6 md:p-8 rounded-2xl shadow-2xl border border-gray-700">
+                <!-- 标题 -->
+                <h1 id="location-text" class="text-xl md:text-2xl font-bold text-center text-blue-300 mb-6">
+                    当你穿越到守望先锋你的
+                </h1>
+
+                <!-- 轮换网格 -->
+                <div id="rotator-grid" class="grid grid-cols-2 gap-4 md:gap-6 mb-8">
+                    <!-- 轮换位将由JS动态填充 -->
+                </div>
+
+                <!-- 控制按钮 -->
+                <div class="flex flex-col md:flex-row gap-4">
+                    <button id="toggle-pause-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-lg">
+                        暂停
+                    </button>
+                    <button id="restart-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-lg">
+                        重新开始
+                    </button>
+                </div>
+                
+                <!-- 设置按钮 -->
+                <div class="mt-6 text-center">
+                    <button id="settings-btn" class="text-gray-400 hover:text-white transition duration-200">
+                        ⚙️ 打开设置
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设置页面 -->
+        <div id="settings-page" class="hidden">
+            <div class="bg-gray-800 p-6 md:p-8 rounded-2xl shadow-2xl border border-gray-700">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">设置</h2>
+                    <button id="back-btn" class="text-gray-400 hover:text-white transition duration-200">&times; 关闭</button>
+                </div>
+
+                <!-- 表单 -->
+                <div class="space-y-6">
+                    <!-- 地点编辑 -->
+                    <div>
+                        <label for="setting-location" class="block text-sm font-medium text-gray-300 mb-2">地点/情景</label>
+                        <input type="text" id="setting-location" class="w-full bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- 轮换速度 (新) -->
+                    <div>
+                        <label for="setting-speed" class="block text-sm font-medium text-gray-300 mb-2">
+                            轮换速度: <span id="setting-speed-value" class="font-bold text-white">30 个/秒</span>
+                        </label>
+                        <input type="range" id="setting-speed" min="15" max="60" value="30" class="w-full">
+                    </div>
+
+                    <!-- 轮换位编辑 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">轮换位 (名称和数量)</label>
+                        <div id="settings-rotators-container" class="space-y-3">
+                            <!-- 轮换位输入框将由JS动态填充 -->
+                        </div>
+                        <button id="add-rotator-btn" class="mt-3 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 w-full">
+                            + 增加一个轮换位
+                        </button>
+                    </div>
+
+                    <!-- 轮换池编辑 -->
+                    <div>
+                        <label for="setting-pool" class="block text-sm font-medium text-gray-300 mb-2">轮换池 (每行一个)</label>
+                        <textarea id="setting-pool" rows="10" class="w-full bg-gray-700 border border-gray-600 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <!-- 保存按钮 -->
+                    <div>
+                        <button id="save-settings-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-lg">
+                            保存设置
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
+
+
