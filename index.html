@@ -8,6 +8,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 2. 引入分离的 CSS 文件 -->
     <link rel="stylesheet" href="style.css">
+
+    <script>
+        // --- 缓存破坏脚本 ---
+        // 将来更新网站后，只需修改这里的版本号即可
+        const appVersion = "2.3"; 
+
+        // 自动将版本号附加到本地 CSS 和 JS 文件
+        document.addEventListener('DOMContentLoaded', () => {
+            const localStylesheet = document.querySelector('link[href="style.css"]');
+            const mainScript = document.querySelector('script[src="js/app.js"]');
+            
+            if (localStylesheet) {
+                localStylesheet.href = `${localStylesheet.href}?v=${appVersion}`;
+            }
+            if (mainScript) {
+                mainScript.src = `${mainScript.src}?v=${appVersion}`;
+            }
+        });
+    </script>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen p-4 md:py-10">
 
