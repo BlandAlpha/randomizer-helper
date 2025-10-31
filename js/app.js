@@ -582,9 +582,11 @@ window.addEventListener('DOMContentLoaded', () => {
             isDown = false;
             slider.classList.remove('active');
 
-            if (isDragging) {
-                slider.setAttribute('data-was-dragged', 'true');
-            }
+            // --- 已移除拖拽检测 ---
+            // if (isDragging) {
+            //     slider.setAttribute('data-was-dragged', 'true');
+            // }
+            // --- 移除结束 ---
             
             rafId = requestAnimationFrame(momentumScroll);
         };
@@ -628,3 +630,4 @@ window.addEventListener('DOMContentLoaded', () => {
         slider.addEventListener('touchend', stopDrag);
     }
 });
+

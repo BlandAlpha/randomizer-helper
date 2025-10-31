@@ -26,7 +26,7 @@ export function renderHomePage(templates, eventHandlers) {
         'default-arknights-uuid': { color: 'from-slate-800 to-gray-900', logo: 'arknights.png' },
         'default-coc-uuid': { color: 'from-emerald-800 to-teal-900', logo: 'coc.png' },
         'default-superpower-uuid': { color: 'from-red-900 to-yellow-600', logo: 'flash.png' },
-        'default-bluey-uuid': { color: 'from-blue-500 to-orange-400', logo: 'bluey.png' }, // <-- 已添加
+        'default-bluey-uuid': { color: 'from-blue-500 to-orange-400', logo: 'bluey.png' }, 
     };
 
     const copyIconSVG = `
@@ -75,14 +75,16 @@ export function renderHomePage(templates, eventHandlers) {
     allCards.forEach(card => {
         // 点击卡片本身 (非按钮区域)
         card.addEventListener('click', (e) => {
-            const container = e.currentTarget.parentElement;
-            // 检查容器上是否有拖拽标记
-            if (container && container.getAttribute('data-was-dragged') === 'true') {
-                e.preventDefault();
-                e.stopPropagation();
-                container.removeAttribute('data-was-dragged');
-                return;
-            }
+            
+            // --- 已移除拖拽检测 ---
+            // const container = e.currentTarget.parentElement;
+            // if (container && container.getAttribute('data-was-dragged') === 'true') {
+            //     e.preventDefault();
+            //     e.stopPropagation();
+            //     container.removeAttribute('data-was-dragged');
+            //     return;
+            // }
+            // --- 移除结束 ---
 
             if (e.target.closest('button')) return; 
             eventHandlers.onStart(e.currentTarget.dataset.id);
