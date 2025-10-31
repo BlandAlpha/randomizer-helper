@@ -26,6 +26,7 @@ export function renderHomePage(templates, eventHandlers) {
         'default-arknights-uuid': { color: 'from-slate-800 to-gray-900', logo: 'arknights.png' },
         'default-coc-uuid': { color: 'from-emerald-800 to-teal-900', logo: 'coc.png' },
         'default-superpower-uuid': { color: 'from-red-900 to-yellow-600', logo: 'flash.png' },
+        'default-bluey-uuid': { color: 'from-blue-500 to-orange-400', logo: 'bluey.png' },
     };
 
     const copyIconSVG = `
